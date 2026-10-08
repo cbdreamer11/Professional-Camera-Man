@@ -1,0 +1,28 @@
+:root{
+  --bg:#0b0b0c; --panel:#141416; --panel2:#1c1c1f; --line:#2a2a2f; --txt:#ececec; --dim:#9a9a9f;
+  --accent:#5b9dff; --accent2:#8bb8ff; --rec:#e5484d; --ok:#4caf72; --warn:#e8a33d;
+  font-size:clamp(11px,1.55vh,30px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,"Segoe UI",Inter,Roboto,"Noto Sans",sans-serif}
+a{color:var(--accent2)}
+button,select,input,textarea{font:inherit;color:inherit}
+button{background:var(--panel2);border:1px solid var(--line);border-radius:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.4rem;padding:0 .7rem;min-height:2.4rem}
+button:active{transform:scale(.97);background:#26262b}
+button.on{border-color:var(--accent);color:var(--accent2);background:#111a2b}
+button.primary{background:var(--accent);color:#111;border-color:var(--accent);font-weight:700}
+button:disabled{opacity:.35;cursor:default;transform:none}
+input,select,textarea{background:#0e0e10;border:1px solid var(--line);border-radius:.6rem;padding:.5rem .7rem;min-height:2.4rem;width:100%}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--accent);outline-offset:-1px}
+label{display:block;font-size:.8rem;color:var(--dim);margin:.6rem 0 .2rem}
+.hide{display:none!important}
+.dim{color:var(--dim)} .accent{color:var(--accent2)}
+h1,h2,h3{margin:.2em 0}
+#credit{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;align-items:center;justify-content:center;gap:.5rem;
+  font-size:.75rem;color:var(--dim);background:rgba(11,11,12,.92);border-top:1px solid var(--line);padding:.25rem .5rem;height:1.7rem}
+#toast{position:fixed;left:50%;top:1.2rem;transform:translateX(-50%);background:#2a1415;border:1px solid #5a2426;color:#ffd0d0;padding:.7rem 1.2rem;
+  border-radius:.8rem;z-index:50;max-width:90%;text-align:center;opacity:0;pointer-events:none;transition:opacity .2s}
+#toast.show{opacity:1} #toast.ok{background:#12251a;border-color:#24543a;color:#c9f2d7}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:.9rem;padding:.7rem .9rem}
+.tag{display:inline-block;font-size:.7rem;padding:.1rem .45rem;border-radius:1rem;border:1px solid var(--line);color:var(--dim)}
+.tag.ok{border-color:#24543a;color:#7fd6a0} .tag.warn{border-color:#6b5320;color:var(--accent2)}

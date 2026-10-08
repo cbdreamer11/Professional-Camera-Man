@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Caleb Elizondo">
+<title>Teleprompter · Professional Camera Man</title>
+<link rel="icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  html,body{height:100%;overflow:hidden}
+  body.embed #credit{display:none}
+  /* ---------- library ---------- */
+  #lib{height:100%;overflow:auto;padding:1.2rem 1.2rem 3rem;max-width:62rem;margin:0 auto}
+  .head{display:flex;align-items:center;gap:.8rem;margin-bottom:1rem}
+  .head img{width:2.6rem;height:2.6rem;border-radius:.6rem}
+  .head h1{font-size:1.5rem;color:var(--accent2);flex:1;margin:0}
+  .head select{width:auto}
+  #drop{border:2px dashed var(--line);border-radius:1rem;padding:1.6rem;text-align:center;color:var(--dim);cursor:pointer;transition:.15s}
+  #drop.over{border-color:var(--accent);color:var(--accent2);background:#0f1830}
+  .row{display:flex;gap:.6rem;flex-wrap:wrap;margin:.8rem 0}
+  .item{display:flex;align-items:center;gap:.8rem;padding:.8rem 1rem;margin:.5rem 0}
+  .item .meta{flex:1;min-width:0} .item .meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item button{min-height:2.4rem}
+  #hint{font-size:.85rem;color:var(--dim);margin-top:1rem}
+  /* ---------- reader ---------- */
+  #reader{position:fixed;inset:0;background:#000;color:#fff}
+  #viewport{position:absolute;inset:0;overflow:hidden}
+  #viewport.mirror #wrap{transform:scaleX(-1)}
+  #wrap{position:absolute;inset:0}
+  #text{position:absolute;left:50%;transform-origin:top center;will-change:transform;font-weight:600;line-height:1.35;text-align:center;
+    padding-bottom:60vh}
+  #text p{margin:0 0 .9em}
+  #text h2{margin:0 0 .6em;color:var(--accent2);font-size:.8em;letter-spacing:.06em;text-transform:uppercase}
+  #text .cue{color:#6c8fc4;font-size:.7em;font-style:italic;font-weight:400}
+  #text b{color:#e6f0ff}
+  #bar{position:absolute;left:0;right:0;bottom:0;background:#0b0b0cee;border-top:1px solid var(--line);display:flex;align-items:center;gap:.5rem;padding:.5rem .7rem;font-size:1rem;flex-wrap:wrap}
+  body:not(.embed) #bar{bottom:1.7rem}
+  #bar button{min-width:2.6rem;min-height:2.6rem}
+  #bar .sp{flex:1}
+  #bar .val{min-width:4.5rem;text-align:center;font-weight:700;color:var(--accent2)} #bar .val i{display:block;font-size:.6rem;color:var(--dim);font-style:normal;font-weight:400}
+  #prog{position:absolute;left:0;right:0;bottom:0;height:3px;background:#222;pointer-events:none} #prog div{height:100%;background:var(--accent);width:0}
+  #line{position:absolute;left:0;right:0;height:0;border-top:1px dashed #5b9dff55;pointer-events:none}
+  #count{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14rem;font-weight:200;color:var(--accent2);background:#000b;z-index:5}
+  #panel{position:absolute;right:.7rem;bottom:5.2rem;width:min(24rem,92vw);z-index:6}
+  #panel label{display:flex;justify-content:space-between}
+  #panel input[type=range]{padding:0;min-height:1.6rem}
+  /* ---------- editor ---------- */
+  #edit{position:fixed;inset:0;background:#000c;z-index:20;display:flex;align-items:center;justify-content:center;padding:1rem}
+  #edit .box{width:min(52rem,100%);max-height:95vh;display:flex;flex-direction:column;gap:.5rem}
+  #edit textarea{flex:1;min-height:45vh;resize:vertical;font-family:ui-monospace,Menlo,monospace}
+</style>
+</head>
+<body>
+
+<!-- ============ library ============ -->
+<div id="lib">
+  <div class="head">
+    <img src="assets/icon-192.png" alt="">
+    <h1><span data-i18n="teleprompter"></span></h1>
+    <a href="/" id="toStudio" class="hide"><span data-i18n="studio"></span> →</a>
+    <select id="langSel" aria-label="language"><option value="en">English</option><option value="es">Español</option></select>
+  </div>
+  <div id="drop"><div data-i18n="drop_here"></div><input id="file" type="file" accept=".txt,.md,.markdown,.docx,.text" multiple class="hide"></div>
+  <div class="row">
+    <button id="bPaste" data-i18n="paste_new"></button>
+    <button id="bExport" data-i18n="export_lib"></button>
+    <button id="bImport" data-i18n="import_lib"></button><input id="fileLib" type="file" accept=".json" class="hide">
+  </div>
+  <div id="list"></div>
+  <div id="hint"></div>
+</div>
+
+<!-- ============ reader ============ -->
+<div id="reader" class="hide">
+  <div id="viewport"><div id="wrap"><div id="text"></div></div></div>
+  <div id="line"></div>
+  <div id="count" class="hide"></div>
+  <div id="prog"><div></div></div>
+  <div id="panel" class="card hide">
+    <label><span data-i18n="speed"></span><b id="vWpm"></b></label><input id="sWpm" type="range" min="60" max="260" step="1">
+    <label><span data-i18n="font"></span><b id="vFont"></b></label><input id="sFont" type="range" min="24" max="140" step="1">
+    <label><span data-i18n="lens_gap"></span><b id="vGap"></b></label><input id="sGap" type="range" min="0" max="45" step="1">
+    <label><span data-i18n="width"></span><b id="vWidth"></b></label><input id="sWidth" type="range" min="30" max="100" step="1">
+    <label><span data-i18n="countdown"></span><b id="vCd"></b></label><input id="sCd" type="range" min="0" max="10" step="1">
+    <div class="row"><button id="bMirror"><span data-i18n="mirror"></span></button></div>
+    <div class="dim" style="font-size:.75rem" data-i18n="hotkeys"></div>
+  </div>
+  <div id="bar">
+    <button id="bList" data-i18n="list"></button>
+    <button id="bHome" title="Home" data-i18n="restart"></button>
+    <button id="bSlow">−</button><div class="val"><span id="wpm">–</span><i>wpm</i></div><button id="bFast">+</button>
+    <button id="bPlay" class="primary" style="min-width:7rem" data-i18n="play"></button>
+    <div class="sp"></div>
+    <span class="dim" id="remain"></span>
+    <button id="bFontDn">A−</button><button id="bFontUp">A+</button>
+    <button id="bSet">⚙</button>
+  </div>
+</div>
+
+<!-- ============ editor ============ -->
+<div id="edit" class="hide"><div class="box card">
+  <label data-i18n="title"></label><input id="eTitle">
+  <label data-i18n="text"></label><textarea id="eText"></textarea>
+  <div class="dim" style="font-size:.8rem" data-i18n="brackets_hint"></div>
+  <div class="row" style="justify-content:flex-end"><button id="eCancel" data-i18n="close"></button><button id="eSave" class="primary" data-i18n="save"></button></div>
+</div></div>
+
+<script src="common.js"></script>
+<script>
+const $ = s => document.querySelector(s), t = PCM.t;
+const EMBED = new URLSearchParams(location.search).has('embed');
+if (EMBED) document.body.classList.add('embed');
+
+/* ---------- storage (per browser; works with or without the server) ---------- */
+const store = {
+  get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e){ return d; } },
+  set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch(e){ PCM.toast('Storage full / blocked'); return false; } },
+};
+let scripts = store.get('pcm_scripts', {});
+let S = Object.assign({wpm: 150, font: 56, mirror: false, gap: 17, width: 80, countdown: 3}, store.get('pcm_tp_settings', {}));
+const saveSettings = () => store.set('pcm_tp_settings', S);
+const saveScripts = () => store.set('pcm_scripts', scripts);
+let cur = null;                       // id of the open script
+
+/* ---------- text helpers ---------- */
+const esc = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function spokenWords(text){
+  return text.replace(/\[[^\]]*\]/g, ' ').replace(/^#{1,3}\s*/gm, ' ').replace(/[*_`>]/g, ' ').split(/\s+/).filter(w => /[\p{L}\p{N}]/u.test(w)).length;
+}
+function render(text){
+  const html = [];
+  let para = [];
+  const flush = () => { if (para.length){ html.push('<p>' + para.join('<br>') + '</p>'); para = []; } };
+  const inline = l => esc(l).replace(/\[([^\]]*)\]/g, '<span class="cue">[$1]</span>').replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  for (const raw of text.replace(/\r/g, '').split('\n')){
+    const line = raw.trimEnd();
+    if (!line.trim()) { flush(); continue; }
+    if (/^---+$/.test(line.trim())) { flush(); html.push('<p>&nbsp;</p>'); continue; }
+    const h = line.match(/^#{1,3}\s+(.*)/);
+    if (h) { flush(); html.push('<h2>' + inline(h[1]) + '</h2>'); continue; }
+    para.push(inline(line));
+  }
+  flush();
+  return html.join('');
+}
+const fmtMin = w => { const m = w / S.wpm; return m < 1 ? '<1 ' + t('min') : Math.round(m) + ' ' + t('min'); };
+
+/* ---------- import: .txt .md .docx (no libraries, no server) ---------- */
+async function readDocx(buf){
+  const dv = new DataView(buf), u8 = new Uint8Array(buf);
+  let eocd = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50){ eocd = i; break; }
+  if (eocd < 0) throw new Error('not a zip');
+  const total = dv.getUint16(eocd + 10, true); let p = dv.getUint32(eocd + 16, true);
+  for (let n = 0; n < total; n++){
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nlen = dv.getUint16(p + 28, true),
+          elen = dv.getUint16(p + 30, true), clen = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nlen));
+    if (name === 'word/document.xml'){
+      const start = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true);
+      let data = u8.subarray(start, start + csize);
+      if (method === 8) data = new Uint8Array(await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer());
+      else if (method !== 0) throw new Error('unsupported compression');
+      return docxXmlToText(new TextDecoder().decode(data));
+    }
+    p += 46 + nlen + elen + clen;
+  }
+  throw new Error('no document.xml');
+}
+function docxXmlToText(xml){
+  const W = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+  const doc = new DOMParser().parseFromString(xml, 'application/xml'), out = [];
+  for (const p of doc.getElementsByTagNameNS(W, 'p')){
+    const st = p.getElementsByTagNameNS(W, 'pStyle')[0], style = st ? (st.getAttributeNS(W, 'val') || st.getAttribute('w:val') || '') : '';
+    let s = '';
+    for (const el of p.getElementsByTagName('*')){
+      if (el.localName === 't') s += el.textContent; else if (el.localName === 'tab') s += '\t'; else if (el.localName === 'br' || el.localName === 'cr') s += '\n';
+    }
+    out.push(/^(Heading|Title)/i.test(style) && s.trim() ? '# ' + s : s);
+  }
+  return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+async function importFiles(files){
+  let n = 0;
+  for (const f of files){
+    const ext = (f.name.split('.').pop() || '').toLowerCase();
+    try {
+      let text;
+      if (ext === 'pdf') { PCM.toast(t('pdf_hint')); continue; }
+      else if (ext === 'docx') text = await readDocx(await f.arrayBuffer());
+      else text = await f.text();
+      const id = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+      scripts[id] = {id, title: f.name.replace(/\.[^.]+$/, ''), text, updated: Date.now()}; n++;
+    } catch(e){ PCM.toast(t('read_error', {f: f.name})); }
+  }
+  if (n){ saveScripts(); renderList(); PCM.toast(t('imported', {n}), true); }
+}
+
+/* ---------- library view ---------- */
+function renderList(){
+  const box = $('#list'); box.innerHTML = '';
+  const items = Object.values(scripts).sort((a, b) => b.updated - a.updated);
+  if (!items.length) box.innerHTML = '<div class="dim" style="padding:1rem 0">' + esc(t('empty_lib')) + '</div>';
+  for (const s of items){
+    const w = spokenWords(s.text), d = document.createElement('div'); d.className = 'card item';
+    d.innerHTML = '<div class="meta"><b>' + esc(s.title || t('untitled')) + '</b><span class="dim">' + w + ' ' + t('words') + ' · ' + fmtMin(w) + '</span></div>' +
+      '<button data-a="open" class="primary">' + t('open') + '</button><button data-a="edit">' + t('edit') + '</button><button data-a="del">✕</button>';
+    d.querySelector('[data-a=open]').onclick = () => openScript(s.id);
+    d.querySelector('[data-a=edit]').onclick = () => editScript(s.id);
+    d.querySelector('[data-a=del]').onclick = () => { if (confirm(t('confirm_delete'))){ delete scripts[s.id]; saveScripts(); renderList(); } };
+    box.appendChild(d);
+  }
+  $('#hint').textContent = t('brackets_hint');
+}
+$('#drop').onclick = () => $('#file').click();
+$('#file').onchange = e => { importFiles(e.target.files); e.target.value = ''; };
+['dragover', 'dragenter'].forEach(ev => $('#drop').addEventListener(ev, e => { e.preventDefault(); $('#drop').classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => $('#drop').addEventListener(ev, e => { e.preventDefault(); $('#drop').classList.remove('over'); }));
+$('#drop').addEventListener('drop', e => importFiles(e.dataTransfer.files));
+$('#bPaste').onclick = () => editScript(null);
+$('#bExport').onclick = () => {
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(scripts, null, 1)], {type: 'application/json'}));
+  a.download = 'teleprompter-library.json'; a.click();
+};
+$('#bImport').onclick = () => $('#fileLib').click();
+$('#fileLib').onchange = async e => {
+  try { const j = JSON.parse(await e.target.files[0].text()); let n = 0;
+    for (const k in j) if (j[k] && typeof j[k].text === 'string'){ scripts[k] = {id: k, title: j[k].title || t('untitled'), text: j[k].text, updated: j[k].updated || Date.now()}; n++; }
+    saveScripts(); renderList(); PCM.toast(t('imported', {n}), true); } catch(err){ PCM.toast(t('read_error', {f: 'JSON'})); }
+  e.target.value = '';
+};
+$('#langSel').value = PCM.lang;
+$('#langSel').onchange = e => { PCM.setLang(e.target.value); renderList(); fillReader(); };
+
+/* ---------- editor ---------- */
+let editing = null;
+function editScript(id){
+  editing = id; const s = id ? scripts[id] : {title: '', text: ''};
+  $('#eTitle').value = s.title; $('#eText').value = s.text; $('#edit').classList.remove('hide'); setTimeout(() => $('#eText').focus(), 50);
+}
+$('#eCancel').onclick = () => $('#edit').classList.add('hide');
+$('#eSave').onclick = () => {
+  const id = editing || 's' + Date.now().toString(36), text = $('#eText').value;
+  if (!text.trim()) return;
+  scripts[id] = {id, title: $('#eTitle').value.trim() || text.trim().split('\n')[0].slice(0, 50), text, updated: Date.now()};
+  saveScripts(); $('#edit').classList.add('hide'); renderList();
+  if (cur === id) openScript(id);
+};
+
+/* ---------- reader ---------- */
+let pos = 0, playing = false, last = 0, words = 1, maxPos = 1, counting = false;
+const textEl = $('#text');
+function layout(){
+  const vh = innerHeight;
+  textEl.style.fontSize = S.font + 'px';
+  textEl.style.width = S.width + '%'; textEl.style.marginLeft = -(S.width / 2) + '%';
+  textEl.style.top = (vh * S.gap / 100) + 'px';
+  $('#line').style.top = (vh * S.gap / 100) + 'px';
+  $('#viewport').classList.toggle('mirror', !!S.mirror);
+  maxPos = Math.max(1, textEl.offsetHeight - parseFloat(getComputedStyle(textEl).paddingBottom));
+  apply();
+}
+function apply(){
+  textEl.style.transform = 'translate3d(0,' + (-pos).toFixed(1) + 'px,0)';
+  const frac = Math.min(1, pos / maxPos);
+  $('#prog div').style.width = (frac * 100) + '%';
+  const left = Math.round(words * (1 - frac));
+  $('#remain').textContent = cur ? fmtMin(left) + ' · ' + left + ' ' + t('words') : '';
+  $('#wpm').textContent = S.wpm;
+}
+const pxPerSec = () => (maxPos / Math.max(words, 1)) * S.wpm / 60;
+function tick(ts){
+  if (!playing) return;
+  pos = Math.min(maxPos, pos + pxPerSec() * Math.min(0.1, (ts - last) / 1000)); last = ts; apply();
+  if (pos >= maxPos) return setPlaying(false);
+  requestAnimationFrame(tick);
+}
+function setPlaying(v){
+  playing = v; $('#bPlay').textContent = v ? t('pause') : t('play');
+  if (v){ last = performance.now(); requestAnimationFrame(tick); }
+  broadcast();
+}
+async function play(immediate){
+  if (!cur || counting) return;
+  if (playing) return setPlaying(false);
+  if (!immediate && S.countdown > 0 && pos < 5){
+    counting = true; $('#count').classList.remove('hide');
+    for (let n = S.countdown; n > 0 && counting; n--){ $('#count').textContent = n; await new Promise(r => setTimeout(r, 1000)); }
+    $('#count').classList.add('hide');
+    if (!counting) return; counting = false;
+  }
+  setPlaying(true);
+}
+function cancelCount(){ counting = false; $('#count').classList.add('hide'); }
+function openScript(id){
+  cur = id; pos = 0; setPlaying(false); cancelCount();
+  $('#lib').classList.add('hide'); $('#reader').classList.remove('hide'); fillReader(); broadcast();
+}
+function fillReader(){
+  if (!cur || !scripts[cur]) return;
+  const s = scripts[cur]; words = Math.max(1, spokenWords(s.text));
+  textEl.innerHTML = render(s.text); layout();
+}
+function toLibrary(){ setPlaying(false); cancelCount(); cur = null; $('#reader').classList.add('hide'); $('#lib').classList.remove('hide'); renderList(); broadcast(); }
+function setWpm(v){ S.wpm = Math.max(60, Math.min(260, Math.round(v))); saveSettings(); syncPanel(); apply(); broadcast(); }
+function setFont(v){ S.font = Math.max(24, Math.min(140, Math.round(v))); saveSettings(); syncPanel(); const f = pos / maxPos; layout(); pos = f * maxPos; apply(); }
+function syncPanel(){
+  const m = [['Wpm', 'wpm'], ['Font', 'font'], ['Gap', 'gap'], ['Width', 'width'], ['Cd', 'countdown']];
+  for (const [id, k] of m){ $('#s' + id).value = S[k]; $('#v' + id).textContent = S[k] + (k === 'gap' || k === 'width' ? '%' : k === 'countdown' ? ' s' : ''); }
+  $('#bMirror').classList.toggle('on', !!S.mirror);
+}
+[['Wpm', 'wpm'], ['Font', 'font'], ['Gap', 'gap'], ['Width', 'width'], ['Cd', 'countdown']].forEach(([id, k]) => {
+  $('#s' + id).oninput = e => { const f = pos / maxPos; S[k] = +e.target.value; saveSettings(); syncPanel(); layout(); if (k === 'font' || k === 'width') pos = f * maxPos; apply(); broadcast(); };
+});
+$('#bMirror').onclick = () => { S.mirror = !S.mirror; saveSettings(); syncPanel(); layout(); };
+$('#bPlay').onclick = () => play(false);
+$('#bList').onclick = toLibrary;
+$('#bHome').onclick = () => { pos = 0; apply(); };
+$('#bSlow').onclick = () => setWpm(S.wpm - 5); $('#bFast').onclick = () => setWpm(S.wpm + 5);
+$('#bFontUp').onclick = () => setFont(S.font + 4); $('#bFontDn').onclick = () => setFont(S.font - 4);
+$('#bSet').onclick = () => $('#panel').classList.toggle('hide');
+$('#viewport').addEventListener('wheel', e => { e.preventDefault(); pos = Math.max(0, Math.min(maxPos, pos + e.deltaY)); apply(); }, {passive: false});
+let drag = null;
+$('#viewport').addEventListener('pointerdown', e => { drag = {y: e.clientY, p: pos, moved: false}; });
+addEventListener('pointermove', e => { if (drag){ const dy = drag.y - e.clientY; if (Math.abs(dy) > 4) drag.moved = true; if (drag.moved){ pos = Math.max(0, Math.min(maxPos, drag.p + dy)); apply(); } } });
+addEventListener('pointerup', () => { drag = null; });
+addEventListener('keydown', e => {
+  if (e.target.closest('input,textarea,select') || !cur) return;
+  const k = e.key;
+  if (k === ' ') { e.preventDefault(); play(false); }
+  else if (k === 'ArrowUp') { e.preventDefault(); setWpm(S.wpm + 5); }
+  else if (k === 'ArrowDown') { e.preventDefault(); setWpm(S.wpm - 5); }
+  else if (k === 'PageDown') { pos = Math.min(maxPos, pos + innerHeight * .8); apply(); }
+  else if (k === 'PageUp') { pos = Math.max(0, pos - innerHeight * .8); apply(); }
+  else if (k === 'Home') { pos = 0; apply(); }
+  else if (k === 'Escape') toLibrary();
+  else if (k.toLowerCase() === 'm') $('#bMirror').click();
+  else if (k.toLowerCase() === 'a') setFont(S.font + 4);
+  else if (k.toLowerCase() === 'z') setFont(S.font - 4);
+});
+addEventListener('resize', () => { if (cur){ const f = pos / maxPos; layout(); pos = f * maxPos; apply(); } });
+
+/* ---------- the studio drives this page through postMessage ---------- */
+function broadcast(){
+  if (!EMBED || parent === window) return;
+  parent.postMessage({pcm: 'tp-status', open: !!cur, playing, counting, wpm: S.wpm, title: cur ? scripts[cur].title : '', words}, location.origin);
+}
+addEventListener('message', e => {
+  if (e.origin !== location.origin || !e.data || e.data.pcm !== 'tp') return;
+  const d = e.data;
+  if (d.cmd === 'play') { if (!playing) play(!!d.immediate); }
+  else if (d.cmd === 'pause') { setPlaying(false); cancelCount(); }
+  else if (d.cmd === 'toggle') play(false);
+  else if (d.cmd === 'restart') { pos = 0; apply(); }
+  else if (d.cmd === 'speed') setWpm(S.wpm + (d.delta || 0));
+  else if (d.cmd === 'list') toLibrary();
+  else if (d.cmd === 'settings') $('#panel').classList.toggle('hide');
+  broadcast();
+});
+setInterval(broadcast, 700);
+
+/* ---------- start ---------- */
+fetch('/api/health').then(r => r.ok && !EMBED && $('#toStudio').classList.remove('hide')).catch(() => {});
+syncPanel(); renderList();
+</script>
+</body>
+</html>

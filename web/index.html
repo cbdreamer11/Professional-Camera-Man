@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Caleb Elizondo">
+<meta name="theme-color" content="#0b0b0c">
+<title>Professional Camera Man</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icon-192.png">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  html,body{height:100%;overflow:hidden;user-select:none}
+  #app{height:calc(100% - 1.7rem);display:grid;grid-template-columns:35% 30% 35%}
+  section{min-height:0;min-width:0;display:flex;flex-direction:column}
+  #izq{gap:.6rem;padding:.6rem;border-right:1px solid var(--line);overflow:auto}
+  #centro{background:#000;position:relative}
+  #der{gap:.5rem;padding:.6rem;border-left:1px solid var(--line);overflow:auto}
+  #tele{border:0;width:100%;height:100%;background:#000}
+
+  /* monitor */
+  #vivo{position:relative;background:#000;aspect-ratio:16/9;width:100%;flex:none;border-radius:.6rem;overflow:hidden}
+  #vivo img,#vivo video{width:100%;height:100%;object-fit:contain;display:block}
+  #vivo .aviso{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.5rem;font-size:1.2rem;color:var(--dim);background:rgba(0,0,0,.72);text-align:center;padding:1rem}
+  #grid{position:absolute;inset:0;pointer-events:none;
+    background:
+      linear-gradient(to right,transparent calc(33.33% - 1px),rgba(255,255,255,.35) 33.33%,transparent calc(33.33% + 1px),transparent calc(66.66% - 1px),rgba(255,255,255,.35) 66.66%,transparent calc(66.66% + 1px)),
+      linear-gradient(to bottom,transparent calc(33.33% - 1px),rgba(255,255,255,.35) 33.33%,transparent calc(33.33% + 1px),transparent calc(66.66% - 1px),rgba(255,255,255,.35) 66.66%,transparent calc(66.66% + 1px)),
+      linear-gradient(to right,transparent calc(50% - 1px),rgba(229,72,77,.7) 50%,transparent calc(50% + 1px))}
+  #boxes{position:absolute;inset:0;pointer-events:none}
+  #boxes div{position:absolute;border:2px solid var(--accent2);border-radius:.3rem}
+  #boxes div.l{border-color:#4aa3ff} #boxes div.r{border-color:#ff7a59} #boxes div.c{border-color:#fff;border-style:dashed}
+  #recVivo{position:absolute;top:.5rem;left:.5rem;display:flex;align-items:center;gap:.5rem;font-size:1.2rem;font-weight:700;background:rgba(0,0,0,.6);padding:.25rem .6rem;border-radius:.5rem}
+  .latido{width:.8rem;height:.8rem;border-radius:50%;background:var(--rec);animation:latido 1s infinite} @keyframes latido{50%{opacity:.2}}
+  #fps{position:absolute;right:.4rem;bottom:.3rem;font-size:.7rem;color:var(--dim);background:rgba(0,0,0,.5);padding:.1rem .4rem;border-radius:.3rem}
+
+  /* controls */
+  .fila{display:flex;gap:.6rem}
+  #btnRec{flex:0 0 42%;min-height:4.6rem;border-radius:1.1rem;font-size:1.6rem;font-weight:800;letter-spacing:.05em;background:#2a1415;border-color:#5a2426;color:#ffb4b4}
+  #btnRec .ico{width:1.4rem;height:1.4rem;border-radius:50%;background:var(--rec)}
+  #btnRec.grabando{background:var(--rec);color:#fff;border-color:var(--rec)} #btnRec.grabando .ico{border-radius:.25rem;background:#fff}
+  .grupo{background:var(--panel);border:1px solid var(--line);border-radius:.9rem;padding:.4rem .5rem;display:flex;flex-direction:column;gap:.3rem;min-width:0;flex:1}
+  .tit{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;text-align:center;white-space:nowrap}
+  .btns{display:flex;gap:.35rem;flex:1} .btns button{flex:1;min-height:2.6rem;font-size:1.05rem}
+  #diales{display:grid;grid-template-columns:repeat(auto-fit,minmax(5.2rem,1fr));gap:.45rem}
+  .dial{background:var(--panel);border:1px solid var(--line);border-radius:.9rem;padding:.35rem;display:flex;flex-direction:column;gap:.3rem;min-width:0}
+  .dial.bloq{opacity:.35;pointer-events:none}
+  .dial .val{height:2.4rem;font-size:1.2rem;font-weight:700;color:var(--accent2);background:transparent;border:1px dashed var(--line);white-space:nowrap;overflow:hidden}
+  .dial.cambiando .val{border-color:var(--accent)}
+  .dial .fl{display:flex;gap:.3rem} .dial .fl button{flex:1;height:2.3rem;padding:0}
+  .vistas button{flex:1;min-height:2.4rem;font-size:.9rem;padding:0 .3rem}
+  #escenas{display:flex;gap:.4rem;flex-wrap:wrap} #escenas button{min-height:2.4rem;font-size:.95rem;padding:0 .8rem}
+  #escenas button.add{border-style:dashed;color:var(--accent2)}
+  .tpbar .valor{flex:1.1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:1.2rem;font-weight:700;color:var(--accent2);line-height:1.05}
+  .tpbar .valor i{font-size:.6rem;color:var(--dim);font-style:normal;font-weight:400}
+
+  /* countdown */
+  #cuenta{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;background:rgba(0,0,0,.75)}
+  #cuenta b{font-size:12rem;font-weight:200;color:var(--accent2);line-height:1}
+  #cuenta span{font-size:1.4rem;text-align:center;padding:0 1rem} #cuenta.rec span{color:#ffb4b4;font-weight:700} #cuenta small{color:var(--dim)}
+
+  /* info column */
+  .marca{display:flex;align-items:center;gap:.6rem} .marca img{width:2.4rem;height:2.4rem;border-radius:.6rem}
+  .marca h1{font-size:1.15rem;margin:0;color:var(--accent2);flex:1;line-height:1.1}
+  .punto{width:.8rem;height:.8rem;border-radius:50%;background:#555;flex:none} .punto.ok{background:var(--ok)} .punto.mal{background:var(--rec)}
+  .et{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em}
+  .grande{font-size:1.5rem;font-weight:700} .chico{font-size:.82rem;color:var(--dim)}
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+  .barra{height:.5rem;background:#2a2a2f;border-radius:1rem;overflow:hidden;margin-top:.3rem} .barra div{height:100%;background:var(--ok);transition:width .4s}
+  .barra div.bajo{background:var(--warn)} .barra div.critico{background:var(--rec)}
+  #tRec.grabando{background:#2a1415;border-color:var(--rec)} #tRec.grabando .grande{color:#ffb4b4}
+  #tMic.alerta{border-color:var(--rec);background:#2a1415}
+  .adv li{margin:.25rem 0;font-size:.85rem} .adv ul{margin:.3rem 0 0;padding-left:1.1rem} .adv li.w{color:var(--accent2)}
+  .lookrow{display:flex;justify-content:space-between;font-size:.85rem;margin:.15rem 0} .lookrow b.ok{color:var(--ok)} .lookrow b.no{color:var(--warn)}
+  .seg{display:flex;gap:.3rem;margin:.3rem 0} .seg button{flex:1;min-height:2rem;font-size:.8rem}
+
+  /* modal */
+  #modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:flex-start;justify-content:center;padding:6vh 1rem 2rem;z-index:40}
+  #modal .caja{background:var(--panel);border:1px solid var(--line);border-radius:1.1rem;padding:1.1rem;width:100%;max-width:52rem;max-height:80vh;overflow:auto}
+  #modal h2{margin:0 0 .8rem;font-size:1.3rem;color:var(--accent2)}
+  #modal .ops{display:grid;grid-template-columns:repeat(auto-fill,minmax(7rem,1fr));gap:.45rem}
+  #modal .ops button{min-height:3rem;font-size:1.1rem} #modal .ops button.actual{border-color:var(--accent);color:var(--accent2);background:#14213a}
+  #modal .acc{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem}
+  #modal .sec{font-size:.78rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin:.8rem 0 .35rem}
+  #down{position:fixed;inset:0;z-index:60;background:#0b0b0c;display:flex;align-items:center;justify-content:center;text-align:center;padding:2rem;flex-direction:column;gap:1rem}
+
+  @media (max-aspect-ratio:5/4){
+    :root{font-size:clamp(12px,2.2vw,26px)}
+    html,body{overflow:auto}
+    #app{display:flex;flex-direction:column;height:auto;padding-bottom:2rem}
+    #centro{height:70vh} #izq,#der{border:0;overflow:visible}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <!-- ===== left: monitor + controls ===== -->
+  <section id="izq">
+    <div id="vivo">
+      <img id="imgVivo" alt="" class="hide">
+      <video id="vidVivo" autoplay muted playsinline class="hide"></video>
+      <div id="grid" class="hide"></div>
+      <div id="boxes" class="hide"></div>
+      <div id="recVivo" class="hide"><span class="latido"></span><span id="tiempoVivo">00:00</span></div>
+      <div id="fps"></div>
+      <div id="avisoVivo" class="aviso"><div id="avisoTxt"></div><div id="avisoSub" class="chico"></div></div>
+    </div>
+
+    <div class="fila">
+      <button id="btnRec"><span class="ico"></span><span id="txtRec"></span></button>
+      <div class="grupo" id="gZoom"><div class="tit" data-i18n="zoom"></div>
+        <div class="btns"><button id="zWide" data-i18n="wide"></button><button id="zTele" data-i18n="tele"></button></div></div>
+    </div>
+
+    <div class="grupo tpbar"><div class="tit" id="tpTit"></div>
+      <div class="btns">
+        <button id="tpLista">☰</button><button id="tpInicio">⤒</button><button id="tpMenos">−</button>
+        <div class="valor"><span id="tpPpm">–</span><i>wpm</i></div><button id="tpMas">+</button>
+        <button id="tpPlay">▶</button><button id="tpAj">⚙</button>
+      </div></div>
+
+    <div id="diales"></div>
+
+    <div class="grupo" id="gFoco"><div class="tit" data-i18n="focus"></div>
+      <div class="btns"><button id="fNear">◀</button><button id="fAF" data-i18n="af"></button><button id="fFar">▶</button></div></div>
+
+    <div class="fila vistas">
+      <button id="bGrid" data-i18n="grid"></button><button id="bLook" data-i18n="look"></button>
+      <button id="bSrc"></button><button id="bRelease" class="hide"></button><button id="bAdv" data-i18n="advanced"></button>
+    </div>
+    <div id="escenas"></div>
+  </section>
+
+  <!-- ===== centre: teleprompter, under the lens ===== -->
+  <section id="centro">
+    <iframe id="tele" src="teleprompter.html?embed=1" allow="fullscreen"></iframe>
+    <div id="cuenta" class="hide"><b id="cuentaN">5</b><span id="cuentaSub"></span><small data-i18n="countdown_cancel"></small></div>
+  </section>
+
+  <!-- ===== right: information ===== -->
+  <section id="der">
+    <div class="marca"><img src="assets/icon-192.png" alt=""><h1>Professional<br>Camera Man</h1><span id="ptoCam" class="punto"></span>
+      <select id="langSel" style="width:auto;min-height:2rem;padding:.2rem" aria-label="language"><option value="en">EN</option><option value="es">ES</option></select></div>
+    <div class="card"><div id="iCam">–</div><div class="chico" id="iLente"></div><div class="chico" id="iTested"></div></div>
+    <div class="card" id="tRec"><div class="et" data-i18n="status"></div><div class="grande" id="iRec">–</div></div>
+    <div class="card" id="cStorage"><div class="et" data-i18n="storage"></div><div class="grande" id="iRest">–</div><div class="barra"><div id="bSd" style="width:0"></div></div><div class="chico" id="iSd"></div></div>
+    <div class="dos">
+      <div class="card" id="cBat"><div class="et" data-i18n="battery"></div><div class="grande" id="iBat">–</div><div class="barra"><div id="bBat" style="width:0"></div></div></div>
+      <div class="card"><div class="et">Info</div><div class="chico" id="iInfo">–</div></div>
+    </div>
+    <div class="card hide" id="tMic"><div class="chico" id="iMic"></div></div>
+
+    <div class="card" id="cLook">
+      <div class="et" data-i18n="look_title"></div>
+      <div class="seg"><button id="lkRef"><span data-i18n="look_vs_ref"></span></button><button id="lkStyle"><span data-i18n="look_vs_style"></span></button></div>
+      <div id="lookOut" class="chico" data-i18n="look_measuring"></div>
+      <div class="et" style="margin-top:.6rem" data-i18n="white_card"></div>
+      <div class="chico" data-i18n="white_card_help"></div>
+      <div class="fila" style="margin-top:.3rem"><button id="wcMeasure" style="flex:1"><span data-i18n="measure"></span></button><button id="wcApply" class="hide" style="flex:1"><span data-i18n="wc_apply"></span></button></div>
+      <div class="chico" id="wcOut"></div>
+    </div>
+
+    <div class="card adv" id="cAdvice"><div class="et"><span data-i18n="advice"></span></div><div id="advBody"></div>
+      <div class="fila" style="margin-top:.4rem"><button id="applyRec" style="flex:1"><span data-i18n="apply_rec"></span></button></div></div>
+    <div class="card"><div class="et" data-i18n="your_studio"></div><div class="chico" id="iStudio"></div>
+      <div class="fila" style="margin-top:.4rem"><a href="setup.html" style="flex:1"><button style="width:100%"><span data-i18n="edit_setup"></span></button></a>
+      <a href="teleprompter.html" target="_blank" style="flex:1"><button style="width:100%"><span data-i18n="teleprompter"></span> ↗</button></a></div></div>
+  </section>
+</div>
+
+<div id="modal" class="hide"><div class="caja" id="caja"></div></div>
+<div id="down" class="hide"><img src="assets/icon-192.png" width="72" height="72" alt=""><h2 data-i18n="server_off"></h2>
+  <div><code>python3 pcm.py</code></div><a href="teleprompter.html"><button><span data-i18n="teleprompter"></span> →</button></a></div>
+
+<script src="common.js"></script>
+<script src="look.js"></script>
+<script>
+const $ = s => document.querySelector(s), t = PCM.t, api = PCM.api, toast = PCM.toast;
+const esp = ms => new Promise(r => setTimeout(r, ms));
+let meta = {}, profile = {}, st = {connected: false, settings: {}, capabilities: []}, tocado = {}, recOn = false, recStart = 0;
+let enCuenta = false, cancelada = false, tp = {open: false, playing: false, wpm: 150, title: ''};
+let advice = {}, lookTimer = null, lookSource = 'ref', lastMic = null, wc = null;
+const has = c => (st.capabilities || []).includes(c);
+
+/* ---------- start ---------- */
+(async function init(){
+  try { meta = await api('GET', '/api/meta'); profile = await api('GET', '/api/profile'); }
+  catch(e){ $('#down').classList.remove('hide'); PCM.translate(); return; }
+  if (!profile.style){ location.href = 'setup.html'; return; }
+  try { if (!localStorage.getItem('pcm_lang')) PCM.setLang(profile.lang); } catch(e){}
+  $('#langSel').value = PCM.lang; $('#langSel').onchange = e => { PCM.setLang(e.target.value); paintAll(); };
+  advice = await api('GET', '/api/recommend').catch(() => ({}));
+  lookSource = advice.targets_reference ? 'ref' : 'style';
+  paintAdvice(); paintStudio(); paintScenes();
+  await tick(); setInterval(tick, 1000);
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+
+async function tick(){
+  try { const n = await api('GET', '/api/state');
+    for (const k in tocado) if (Date.now() < tocado[k] && st.settings[k] && n.settings[k]) n.settings[k].value = st.settings[k].value;
+    st = n; $('#down').classList.add('hide');
+  } catch(e){ $('#down').classList.remove('hide'); return; }
+  if (st.recording != null) setRec(!!st.recording);
+  paintAll();
+}
+function paintAll(){ paintInfo(); paintDials(); paintRec(); paintMonitor(); PCM.translate(); paintTp(); paintStudio(); }
+
+/* ---------- monitor ---------- */
+let monitorMode = null;
+function wantVideo(){ let v = null; try { v = localStorage.getItem('pcm_source'); } catch(e){} return v === 'video' || !has('liveview'); }
+function paintMonitor(){
+  const video = wantVideo(), mode = video ? 'video' : 'cam';
+  $('#bSrc').textContent = video ? t('source_vid') : t('source_cam');
+  $('#bSrc').disabled = false;
+  const ok = !!st.connected || video;
+  if (mode !== monitorMode || (mode === 'cam' && !$('#imgVivo').src)){ monitorMode = mode; startMonitor(mode); }
+  $('#avisoVivo').classList.toggle('hide', (video && vidReady) || (!video && st.connected && !st.released));
+  if (!(video && vidReady) && !(!video && st.connected && !st.released)){
+    $('#avisoTxt').textContent = st.released ? t('release') + ' ✓' : (video ? t('pick_video') : (st.error && !/connecting|no camera/i.test(st.error) ? st.error : t('connecting')));
+    $('#avisoSub').textContent = video ? '' : t('connect_hint');
+  }
+  $('#fps').textContent = st.connected && st.fps ? st.fps + ' fps' : '';
+}
+let vidReady = false;
+function startMonitor(mode){
+  const img = $('#imgVivo'), vid = $('#vidVivo');
+  img.classList.toggle('hide', mode !== 'cam'); vid.classList.toggle('hide', mode !== 'video');
+  if (mode === 'cam'){ stopVideo(); img.onerror = () => setTimeout(() => { if (monitorMode === 'cam') img.src = '/live.mjpg?t=' + Date.now(); }, 2000); img.src = '/live.mjpg?t=' + Date.now(); }
+  else { img.removeAttribute('src'); startVideo(); }
+}
+async function startVideo(deviceId){
+  stopVideo();
+  try {
+    let id = deviceId; try { id = id || localStorage.getItem('pcm_video_device'); } catch(e){}
+    const s = await navigator.mediaDevices.getUserMedia({video: id ? {deviceId: {exact: id}, width: {ideal: 1920}} : {width: {ideal: 1920}}, audio: false});
+    $('#vidVivo').srcObject = s; vidReady = true; paintMonitor();
+  } catch(e){ vidReady = false; }
+}
+function stopVideo(){ const s = $('#vidVivo').srcObject; if (s) s.getTracks().forEach(x => x.stop()); $('#vidVivo').srcObject = null; vidReady = false; }
+$('#bSrc').onclick = async () => {
+  if (!has('liveview')){ return pickVideo(); }
+  const nowVideo = wantVideo();
+  try { localStorage.setItem('pcm_source', nowVideo ? 'cam' : 'video'); } catch(e){}
+  if (!nowVideo) pickVideo(); else paintMonitor();
+};
+async function pickVideo(){
+  try { (await navigator.mediaDevices.getUserMedia({video: true})).getTracks().forEach(x => x.stop()); } catch(e){}
+  const devs = (await navigator.mediaDevices.enumerateDevices().catch(() => [])).filter(d => d.kind === 'videoinput');
+  const caja = $('#caja'); caja.innerHTML = '<h2>' + t('pick_video') + '</h2><div class="ops" id="mOps"></div><div class="acc"><button id="mC">' + t('close') + '</button></div>';
+  if (!devs.length) $('#mOps').innerHTML = '<div class="dim">' + t('no_video') + '</div>';
+  for (const d of devs){ const b = document.createElement('button'); b.textContent = d.label || 'Camera';
+    b.onclick = () => { try { localStorage.setItem('pcm_source', 'video'); localStorage.setItem('pcm_video_device', d.deviceId); } catch(e){} closeModal(); monitorMode = null; paintMonitor(); };
+    $('#mOps').appendChild(b); }
+  $('#mC').onclick = closeModal; $('#modal').classList.remove('hide');
+}
+function closeModal(){ $('#modal').classList.add('hide'); }
+$('#modal').onclick = e => { if (e.target.id === 'modal') closeModal(); };
+$('#bGrid').onclick = () => { $('#grid').classList.toggle('hide'); $('#bGrid').classList.toggle('on'); };
+
+/* ---------- dials: whatever the camera reports ---------- */
+const KELVINS = [3200, 4300, 5000, 5600, 6000, 6500];
+const DIALS = [['iso', 'iso'], ['aperture', 'aperture'], ['shutter', 'shutter'], ['kelvin', 'kelvin'], ['wb', 'wb']];
+function dialKeys(){ return DIALS.map(d => d[0]).filter(k => st.settings[k] && (k !== 'wb' || !st.settings.kelvin)); }
+function fmt(k, v){
+  if (v == null || v === '') return '–';
+  if (k === 'kelvin') return v + 'K';
+  if (k === 'iso') return v === 'auto' ? 'Auto' : v;
+  if (k === 'aperture' && typeof v === 'number') return 'f/' + v;
+  return String(v);
+}
+function paintDials(){
+  const cont = $('#diales'), keys = dialKeys();
+  if (cont.dataset.keys !== keys.join()){
+    cont.dataset.keys = keys.join(); cont.innerHTML = '';
+    for (const k of keys){
+      const el = document.createElement('div'); el.className = 'dial'; el.dataset.k = k;
+      el.innerHTML = '<div class="tit">' + t(k) + '</div><button class="val">–</button><div class="fl"><button data-p="-1">◀</button><button data-p="1">▶</button></div>';
+      el.querySelector('.val').onclick = () => chooser(k);
+      el.querySelectorAll('.fl button').forEach(b => b.onclick = () => step(k, +b.dataset.p));
+      cont.appendChild(el);
+    }
+  }
+  for (const el of cont.children){
+    const k = el.dataset.k, s = st.settings[k];
+    el.querySelector('.val').textContent = s ? fmt(k, s.value) : '–';
+    const movable = s && (s.options ? s.options.length > 1 : s.min != null);
+    el.classList.toggle('bloq', !st.connected || !movable);
+    el.classList.toggle('cambiando', Date.now() < (tocado[k] || 0));
+  }
+  $('#gZoom').style.display = has('zoom') ? '' : 'none'; $('#gFoco').style.display = has('focus') ? '' : 'none';
+  $('#bRelease').classList.toggle('hide', !has('release'));
+  $('#bRelease').textContent = st.released ? t('take') : t('release');
+  $('#bRelease').classList.toggle('on', !!st.released);
+}
+async function put(k, v){
+  const prev = st.settings[k] && st.settings[k].value;
+  if (st.settings[k]) st.settings[k].value = v;
+  tocado[k] = Date.now() + 1500; paintDials();
+  try { await api('POST', '/api/set', {key: k, value: v}); }
+  catch(e){ if (st.settings[k]) st.settings[k].value = prev; tocado[k] = 0; paintDials(); toast(t('failed') + ': ' + e.message); }
+}
+function step(k, dir){
+  const s = st.settings[k]; if (!s) return;
+  if (s.options){
+    const i = s.options.indexOf(s.value), j = Math.min(s.options.length - 1, Math.max(0, (i < 0 ? 0 : i) + dir));
+    if (j !== i) put(k, s.options[j]);
+  } else if (s.min != null){
+    put(k, Math.min(s.max, Math.max(s.min, Number(s.value) + dir * (s.step || 100))));
+  }
+}
+function chooser(k){
+  const s = st.settings[k]; if (!s) return;
+  const caja = $('#caja'); caja.innerHTML = '<h2>' + t(k) + '</h2><div class="ops" id="mOps"></div><div class="acc"><button id="mC">' + t('close') + '</button></div>';
+  const add = (txt, cur, fn) => { const b = document.createElement('button'); b.textContent = txt; if (cur) b.className = 'actual'; b.onclick = () => { closeModal(); fn(); }; $('#mOps').appendChild(b); };
+  if (s.options) for (const v of s.options) add(fmt(k, v), v === s.value, () => put(k, v));
+  else if (s.min != null) for (const v of KELVINS.filter(v => v >= s.min && v <= s.max)) add(v + 'K', v === s.value, () => put(k, v));
+  $('#mC').onclick = closeModal; $('#modal').classList.remove('hide');
+}
+function holdButton(el, dir){
+  let on = false;
+  const stop = () => { if (!on) return; on = false; el.classList.remove('on'); api('POST', '/api/zoom', {dir: 'stop'}).catch(() => {}); };
+  el.onpointerdown = e => { e.preventDefault(); on = true; el.classList.add('on'); api('POST', '/api/zoom', {dir}).catch(err => toast('Zoom: ' + err.message)); };
+  el.onpointerup = el.onpointerleave = el.onpointercancel = stop;
+}
+holdButton($('#zWide'), 'wide'); holdButton($('#zTele'), 'tele');
+$('#fNear').onclick = () => api('POST', '/api/focus', {action: 'near'}).catch(e => toast(e.message));
+$('#fFar').onclick = () => api('POST', '/api/focus', {action: 'far'}).catch(e => toast(e.message));
+$('#fAF').onclick = () => api('POST', '/api/focus', {action: 'af'}).catch(e => toast(e.message));
+$('#bRelease').onclick = async () => {
+  if (recOn) return toast(t('stop'));
+  const r = await api('POST', '/api/release', {release: !st.released}).catch(e => (toast(e.message), null));
+  if (r){ st.released = r.released; monitorMode = null; paintMonitor(); }
+};
+$('#bAdv').onclick = () => {
+  const adv = Object.assign({}, st.advanced || {}), caja = $('#caja');
+  caja.innerHTML = '<h2>' + t('advanced') + '</h2><div id="advList"></div><div class="acc"><button id="mC">' + t('close') + '</button></div>';
+  const keys = Object.keys(adv);
+  if (!keys.length) $('#advList').innerHTML = '<div class="dim">–</div>';
+  for (const k of keys){
+    const a = adv[k], row = document.createElement('div'); row.className = 'fila'; row.style.margin = '.3rem 0';
+    row.innerHTML = '<div style="flex:1;align-self:center" class="chico">' + k + '</div>';
+    if (a.options){ const sel = document.createElement('select'); sel.style.flex = '1';
+      for (const o of a.options){ const op = document.createElement('option'); op.value = op.textContent = o; if (String(o) === String(a.value)) op.selected = true; sel.appendChild(op); }
+      sel.onchange = () => api('POST', '/api/set', {key: k, value: sel.value}).then(() => toast(t('applied'), true)).catch(e => toast(e.message)); row.appendChild(sel); }
+    else { const b = document.createElement('div'); b.textContent = JSON.stringify(a.value); b.style.flex = '1'; row.appendChild(b); }
+    $('#advList').appendChild(row);
+  }
+  $('#mC').onclick = closeModal; $('#modal').classList.remove('hide');
+};
+
+/* ---------- record: one button, count-in shared with the teleprompter ---------- */
+async function recCall(action){
+  for (let i = 0; ; i++){
+    try { await api('POST', '/api/rec', {action}); return; }
+    catch(e){ if (action === 'start' || !/busy/i.test(e.message) || i >= 6) throw e; await esp(800); }
+  }
+}
+function showCount(n, sub, rec){ $('#cuenta').classList.toggle('hide', n == null); $('#cuenta').classList.toggle('rec', !!rec); if (n != null){ $('#cuentaN').textContent = n; $('#cuentaSub').textContent = sub; } }
+$('#btnRec').onclick = async () => {
+  if (!has('record')) return toast(t('no_camera'));
+  if (enCuenta){ cancelada = true; return; }
+  if (recOn){ tpCmd('pause'); try { await recCall('stop'); setRec(false); } catch(e){ toast(e.message); } return; }
+  const pf = profile.prefs || {countdown: 5, camera_offset: 3};
+  const withText = tp.open, total = withText ? pf.countdown : pf.camera_offset, camAt = Math.min(pf.camera_offset, total);
+  enCuenta = true; cancelada = false; paintRec(); tpCmd('pause');
+  try {
+    for (let s = 0; s <= total; s++){
+      if (cancelada) throw new Error('cancelled');
+      if (s === camAt){ showCount(total - s || '●', t('cam_starts', {n: 0}), true); await recCall('start'); setRec(true); }
+      if (s === total) break;
+      const untilCam = camAt - s;
+      showCount(total - s, untilCam > 0 ? t('cam_starts', {n: untilCam}) : t('text_starts', {n: total - s}), untilCam <= 0);
+      await esp(1000);
+    }
+    showCount(null);
+    if (withText) tpCmd('play', {immediate: true});
+  } catch(e){
+    showCount(null);
+    if (recOn) await recCall('stop').then(() => setRec(false)).catch(() => {});
+    if (e.message !== 'cancelled') toast(/busy/i.test(e.message) ? t('busy') : e.message);
+  } finally { enCuenta = false; paintRec(); }
+};
+function setRec(v){ if (v === recOn) return; recOn = v; if (v) recStart = Date.now(); paintRec(); }
+const clock = () => { const s = Math.floor((Date.now() - recStart) / 1000), h = Math.floor(s / 3600), m = Math.floor(s / 60) % 60;
+  return (h ? h + ':' : '') + String(m).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); };
+function paintRec(){
+  $('#btnRec').classList.toggle('grabando', recOn);
+  $('#txtRec').textContent = enCuenta ? t('cancel') : recOn ? t('stop') : t('rec');
+  $('#recVivo').classList.toggle('hide', !recOn); $('#tRec').classList.toggle('grabando', recOn);
+  $('#iRec').innerHTML = recOn ? '<span class="latido" style="display:inline-block"></span> ' + clock() : (st.connected ? t('ready') : t('no_camera'));
+  if (recOn) $('#tiempoVivo').textContent = clock();
+}
+setInterval(() => { if (recOn) paintRec(); }, 250);
+
+/* ---------- teleprompter (the iframe is the same app as /teleprompter.html) ---------- */
+function tpCmd(cmd, extra){ const w = $('#tele').contentWindow; if (w) w.postMessage(Object.assign({pcm: 'tp', cmd}, extra || {}), location.origin); }
+addEventListener('message', e => { if (e.origin === location.origin && e.data && e.data.pcm === 'tp-status'){ tp = e.data; paintTp(); } });
+$('#tpLista').onclick = () => tpCmd('list'); $('#tpInicio').onclick = () => tpCmd('restart');
+$('#tpMenos').onclick = () => tpCmd('speed', {delta: -5}); $('#tpMas').onclick = () => tpCmd('speed', {delta: 5});
+$('#tpPlay').onclick = () => tpCmd('toggle'); $('#tpAj').onclick = () => tpCmd('settings');
+function paintTp(){
+  $('#tpTit').textContent = t('teleprompter') + (tp.open ? ' · ' + tp.title : '');
+  $('#tpPpm').textContent = tp.wpm || '–'; $('#tpPlay').textContent = tp.playing ? '⏸' : '▶';
+  for (const b of ['#tpInicio', '#tpMenos', '#tpMas', '#tpPlay', '#tpAj']) $(b).disabled = !tp.open && b !== '#tpAj';
+}
+
+/* ---------- info ---------- */
+const gb = b => b == null ? '–' : (b / 1e9).toFixed(1) + ' GB';
+const dur = s => s == null ? '–' : (s >= 3600 ? Math.floor(s / 3600) + ' h ' : '') + Math.floor(s / 60) % 60 + ' min';
+function bar(el, pct){ el.style.width = Math.max(0, Math.min(100, pct)) + '%'; el.className = pct < 10 ? 'critico' : pct < 25 ? 'bajo' : ''; }
+function paintInfo(){
+  const ok = !!st.connected;
+  $('#ptoCam').className = 'punto ' + (ok ? 'ok' : 'mal');
+  $('#iCam').textContent = ok ? (st.model || '✓') : (wantVideo() && !has('liveview') ? meta.adapters && (meta.adapters.find(a => a.id === st.adapter) || {}).name || '' : t('no_camera'));
+  $('#iLente').textContent = ok && st.extra && st.extra.lens ? t('lens') + ': ' + st.extra.lens : '';
+  $('#iTested').textContent = st.adapter && st.adapter !== 'video_input' ? (st.adapter_tested ? '✓ ' + t('tested') : '⚠ ' + t('untested')) : '';
+  const s = st.storage; $('#cStorage').style.display = s ? '' : 'none';
+  if (s){ $('#iRest').textContent = s.remaining_s != null ? dur(s.remaining_s) + ' ' + t('left') : (s.free != null ? gb(s.free) + ' ' + t('left') : '–');
+    bar($('#bSd'), s.total ? s.free / s.total * 100 : 0); $('#iSd').textContent = s.free != null ? t('free_of', {a: gb(s.free), b: gb(s.total)}) : ''; }
+  $('#cBat').style.display = st.battery != null ? '' : 'none';
+  if (st.battery != null){ $('#iBat').textContent = st.battery + '%'; bar($('#bBat'), st.battery); }
+  const x = st.extra || {}; $('#iInfo').textContent = [x.temperature && x.temperature !== 'normal' ? '🌡 ' + x.temperature : '', x.zoom || ''].filter(Boolean).join(' · ') || '–';
+  const ext = x.mic_external;
+  if (ok && ext != null){
+    if (lastMic === true && !ext) toast(t('mic_dropped'));
+    lastMic = ext; $('#tMic').classList.remove('hide'); $('#tMic').classList.toggle('alerta', !ext && recOn);
+    $('#iMic').textContent = ext ? t('mic_ext') : t('mic_int');
+  } else $('#tMic').classList.add('hide');
+}
+function paintStudio(){
+  const names = {en: {corporate_clean: 'Corporate & clean', podcast_warm: 'Podcast, warm', cinematic_moody: 'Cinematic, moody', high_key_bright: 'Bright & airy', tech_cool: 'Tech, cool', custom: 'Reference photo'},
+                 es: {corporate_clean: 'Corporativo y limpio', podcast_warm: 'Podcast, cálido', cinematic_moody: 'Cinematográfico', high_key_bright: 'Brillante y limpio', tech_cool: 'Tech, frío', custom: 'Foto de referencia'}}[PCM.lang];
+  $('#iStudio').textContent = t('style') + ': ' + (names[profile.style] || profile.style) + ' · ' + (profile.lights || []).length + ' 💡 · ' + profile.fps + ' fps';
+}
+function paintAdvice(){
+  const w = advice.warnings || [], n = advice.notes || [], body = $('#advBody');
+  body.innerHTML = '';
+  if (!w.length && !n.length){ body.innerHTML = '<div class="chico">' + t('nothing_to_fix') + '</div>'; }
+  const ul = document.createElement('ul');
+  for (const x of w){ const li = document.createElement('li'); li.className = 'w'; li.textContent = '⚠ ' + x; ul.appendChild(li); }
+  for (const x of n){ const li = document.createElement('li'); li.textContent = x; ul.appendChild(li); }
+  body.appendChild(ul);
+}
+$('#applyRec').onclick = async () => {
+  const sc = Object.assign({}, advice.scene || {}), set = {};
+  if (sc.shutter && st.settings.shutter) set.shutter = sc.shutter;
+  if (sc.kelvin && st.settings.kelvin) set.kelvin = sc.kelvin;
+  if (!Object.keys(set).length) return toast(t('failed'));
+  const r = await api('POST', '/api/apply', {settings: set}).catch(e => ({failed: [{error: e.message}]}));
+  r.failed && r.failed.length ? toast(t('failed') + ': ' + r.failed.map(f => f.key + ' ' + f.error).join(', ')) : toast(t('applied'), true);
+};
+
+/* ---------- scenes ---------- */
+async function paintScenes(){
+  const sc = await api('GET', '/api/scenes').catch(() => ({})), box = $('#escenas'); box.innerHTML = '';
+  for (const [name, set] of Object.entries(sc)){
+    const b = document.createElement('button'); b.textContent = name;
+    b.onclick = async () => { const r = await api('POST', '/api/apply', {settings: set}).catch(e => ({failed: [{key: '', error: e.message}]}));
+      r.failed.length ? toast(name + ': ' + r.failed.map(f => f.key).join(', ')) : toast(name + ' ✓', true); };
+    b.oncontextmenu = ev => { ev.preventDefault(); if (confirm(t('delete') + ' "' + name + '"?')) api('DELETE', '/api/scenes/' + encodeURIComponent(name)).then(paintScenes); };
+    box.appendChild(b);
+  }
+  const add = document.createElement('button'); add.className = 'add'; add.textContent = t('save_scene');
+  add.onclick = () => {
+    $('#caja').innerHTML = '<h2>' + t('save_scene') + '</h2><input id="sName" placeholder="' + t('scene_name') + '"><div class="acc"><button id="mC">' + t('close') + '</button><button id="mOk" class="primary">' + t('save') + '</button></div>';
+    $('#mC').onclick = closeModal;
+    $('#mOk').onclick = async () => { const name = $('#sName').value.trim(); if (!name) return;
+      const set = {}; for (const k of ['wb', 'kelvin', 'aperture', 'shutter', 'iso']) if (st.settings[k]) set[k] = st.settings[k].value;
+      await api('POST', '/api/scenes', {name, settings: set}); closeModal(); paintScenes(); toast(t('saved'), true); };
+    $('#modal').classList.remove('hide'); setTimeout(() => $('#sName').focus(), 50);
+  };
+  box.appendChild(add);
+}
+
+/* ---------- Look match + white card (measured on the monitor, in the browser) ---------- */
+const monitorEl = () => wantVideo() ? $('#vidVivo') : $('#imgVivo');
+function paintBoxes(on){
+  const b = $('#boxes'); b.classList.toggle('hide', !on); if (!on) return; b.innerHTML = '';
+  for (const [k, cls] of [['face', ''], ['left', 'l'], ['right', 'r'], ['card', 'c']]){
+    const bx = Look.BOX[k], d = document.createElement('div'); d.className = cls;
+    d.style.cssText = 'left:' + bx[0] * 100 + '%;top:' + bx[1] * 100 + '%;width:' + (bx[2] - bx[0]) * 100 + '%;height:' + (bx[3] - bx[1]) * 100 + '%';
+    b.appendChild(d);
+  }
+}
+$('#bLook').onclick = () => {
+  const on = $('#bLook').classList.toggle('on'); paintBoxes(on); clearInterval(lookTimer);
+  if (on) lookTimer = setInterval(measureLook, 700); else $('#lookOut').textContent = t('look_measuring');
+};
+function setLookSource(s){ lookSource = s; $('#lkRef').classList.toggle('on', s === 'ref'); $('#lkStyle').classList.toggle('on', s === 'style'); }
+$('#lkRef').onclick = () => setLookSource('ref'); $('#lkStyle').onclick = () => setLookSource('style');
+function nearestIso(target){
+  const o = ((st.settings.iso || {}).options || []).map(Number).filter(x => x > 0);
+  return o.length ? o.reduce((a, b) => Math.abs(b - target) < Math.abs(a - target) ? b : a) : Math.round(target / 50) * 50;
+}
+function measureLook(){
+  let m; try { m = Look.analyze(monitorEl()); } catch(e){ m = null; }
+  const out = $('#lookOut'); if (!m){ out.textContent = t('look_measuring'); return; }
+  setLookSource(lookSource === 'ref' && !advice.targets_reference ? 'style' : lookSource);
+  const tg = lookSource === 'ref' && advice.targets_reference ? advice.targets_reference : advice.targets_style;
+  if (!tg){ out.textContent = JSON.stringify(m); return; }
+  const inR = (v, r) => v >= r[0] && v <= r[1];
+  const side = {left: t('left_s'), right: t('right_s'), even: t('even')}[m.bright_side];
+  const rows = [[t('look_face'), m.face_luma + ' (' + tg.face_luma[0] + '–' + tg.face_luma[1] + ')', inR(m.face_luma, tg.face_luma)],
+                [t('look_cheek'), m.cheek_ratio + ' (' + tg.cheek_ratio[0] + '–' + tg.cheek_ratio[1] + ')', inR(m.cheek_ratio, tg.cheek_ratio)],
+                [t('look_side'), side + (tg.bright_side && tg.bright_side !== 'even' ? ' (' + {left: t('left_s'), right: t('right_s')}[tg.bright_side] + ')' : ''), !tg.bright_side || tg.bright_side === 'even' || tg.bright_side === m.bright_side]];
+  if (tg.rb_ratio) rows.push([t('look_warm'), m.rb_ratio + ' (' + tg.rb_ratio + ')', Math.abs(m.rb_ratio - tg.rb_ratio) < 0.12]);
+  out.innerHTML = rows.map(r => '<div class="lookrow"><span>' + r[0] + '</span><b class="' + (r[2] ? 'ok' : 'no') + '">' + r[1] + '</b></div>').join('');
+  const tips = [], mid = (tg.face_luma[0] + tg.face_luma[1]) / 2;
+  if (!inR(m.face_luma, tg.face_luma)){
+    const stops = Math.log2(Math.pow(mid / Math.max(1, m.face_luma), 2.4)), a = Math.abs(stops).toFixed(1), pct = Math.round(Math.abs(mid - m.face_luma) / mid * 100);
+    const iso = parseFloat((st.settings.iso || {}).value), key = (profile.lights || []).find(l => l.role === 'key'), d0 = key ? Math.round(key.distance_cm) : null;
+    const vars = {p: pct, s: a, iso: isNaN(iso) ? '–' : nearestIso(iso * Math.pow(2, stops)), d0: d0 || '–', d1: d0 ? Math.round(d0 / Math.sqrt(Math.pow(2, stops))) : '–'};
+    tips.push(t(stops > 0 ? 'too_dark' : 'too_bright', vars));
+  } else tips.push(t('face_ok'));
+  tips.push(m.cheek_ratio > tg.cheek_ratio[1] ? t('cheek_high') : m.cheek_ratio < tg.cheek_ratio[0] ? t('cheek_low') : t('cheek_ok'));
+  out.innerHTML += '<ul style="padding-left:1.1rem;margin:.4rem 0 0">' + tips.map(x => '<li>' + x + '</li>').join('') + '</ul>';
+}
+$('#wcMeasure').onclick = async () => {
+  paintBoxes(true);
+  let c; try { c = Look.card(monitorEl()); } catch(e){}
+  if (!c) return toast(t('look_measuring'));
+  const r = await api('POST', '/api/white-card', c).catch(e => null); if (!r || !r.ok) return;
+  wc = r; $('#wcApply').classList.add('hide');
+  if (r.neutral) $('#wcOut').textContent = t('wc_neutral');
+  else {
+    $('#wcOut').textContent = r.cast_pct > 0 ? t('wc_blue', {p: r.cast_pct, k: r.suggest_kelvin_delta}) : t('wc_red', {p: Math.abs(r.cast_pct), k: r.suggest_kelvin_delta});
+    if (st.settings.kelvin) $('#wcApply').classList.remove('hide');
+  }
+  if (!$('#bLook').classList.contains('on')) setTimeout(() => paintBoxes(false), 2500);
+};
+$('#wcApply').onclick = () => { const s = st.settings.kelvin; if (!s || !wc) return;
+  put('kelvin', Math.min(s.max, Math.max(s.min, Number(s.value) + wc.suggest_kelvin_delta))); $('#wcApply').classList.add('hide'); };
+setLookSource(lookSource);
+</script>
+</body>
+</html>

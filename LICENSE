@@ -1,0 +1,47 @@
+Professional Camera Man License — MIT + Attribution
+Version 1.0
+
+Copyright (c) 2026 Caleb Elizondo (https://github.com/cbdreamer11)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this
+software and associated documentation files (the "Software"), to use, copy, modify,
+merge, publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, INCLUDING FOR COMMERCIAL USE,
+subject to the following conditions:
+
+1. NOTICE. The copyright notice above and this permission notice must be included in
+   all copies or substantial portions of the Software.
+
+2. ATTRIBUTION (the one condition that goes beyond MIT). Every copy, fork, derivative
+   work, hosted service or product that you distribute, publish or SELL, and that
+   includes the Software's user interface, must keep this credit visible in that
+   interface, as shipped (the footer of every page):
+
+       Created by Caleb Elizondo      (linking to https://github.com/cbdreamer11)
+
+   You may ADD your own credit next to it (for example "Modified by …"), but you may not
+   remove, hide, shrink to illegibility or replace it. If you reuse only parts of the
+   Software without its interface (for example a single camera adapter), keep the
+   copyright notice in those files and credit "Caleb Elizondo" in your product's
+   documentation or "About" page.
+
+3. NAME. The name "Professional Camera Man" identifies the original project. You may say
+   your work is based on it; do not present a derivative as the original project.
+
+4. THIRD-PARTY MARKS. Canon, Sony, DJI, GoPro, Blackmagic Design, Panasonic, Nikon,
+   Fujifilm, Ricoh, Insta360 and any other brand names are trademarks of their
+   respective owners. This project is independent: it is not affiliated with,
+   endorsed by or sponsored by any of them, and names are used only to say which
+   public interface an adapter speaks.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR OR COPYRIGHT
+HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF
+CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
+THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Camera control note: software that talks to a camera can, in the worst case, change its
+settings, stop a recording, fill or lock its card or require a power cycle. Use it at
+your own risk, test with the camera idle first, and never rely on it as the only
+safeguard for an irreplaceable recording.

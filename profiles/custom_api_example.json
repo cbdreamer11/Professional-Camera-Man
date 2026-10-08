@@ -1,0 +1,24 @@
+{
+  "_comment": "Describe ANY camera that has an HTTP API. Save a copy, edit it, then in the setup wizard choose 'Custom' and give the path. {value} is replaced by what the app sends. See docs/ADAPTERS.md",
+  "base_url": "http://192.168.1.60:8000",
+  "headers": { "Authorization": "Bearer YOUR_TOKEN_IF_ANY" },
+  "model": "My camera",
+  "actions": {
+    "record_start": { "method": "POST", "path": "/rec", "json": { "on": true } },
+    "record_stop":  { "method": "POST", "path": "/rec", "json": { "on": false } },
+    "zoom_tele":    { "method": "POST", "path": "/zoom/in" },
+    "zoom_wide":    { "method": "POST", "path": "/zoom/out" },
+    "zoom_stop":    { "method": "POST", "path": "/zoom/stop" },
+    "focus_af":     { "method": "POST", "path": "/af" }
+  },
+  "set": {
+    "iso":    { "method": "PUT", "path": "/settings/iso", "json": { "value": "{value}" } },
+    "kelvin": { "method": "PUT", "path": "/settings/wb",  "json": { "kelvin": "{value}" } }
+  },
+  "status": {
+    "method": "GET", "path": "/status",
+    "map": { "connected": "ok", "recording": "rec.active", "battery": "battery.percent", "model": "device.name" },
+    "settings": { "iso": "iso", "kelvin": "wb.kelvin" }
+  },
+  "liveview": { "path": "/preview.jpg" }
+}

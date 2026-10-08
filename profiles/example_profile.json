@@ -1,0 +1,16 @@
+{
+  "lang": "en",
+  "style": "corporate_clean",
+  "use": "youtube",
+  "fps": 29.97,
+  "mains_hz": 60,
+  "camera": { "adapter": "video_input", "cfg": {}, "lens": "35 mm equivalent", "distance_cm": 200, "height_vs_eyes_cm": 5 },
+  "subject": { "background_distance_cm": 150 },
+  "lights": [
+    { "name": "Softbox", "role": "key",  "modifier": "softbox", "side": "left",  "azimuth_deg": 40,  "height_cm": 30, "distance_cm": 100, "power_pct": 80, "kelvin": 5600 },
+    { "name": "Panel",   "role": "fill", "modifier": "panel",   "side": "right", "azimuth_deg": 35,  "height_cm": 10, "distance_cm": 170, "power_pct": 40, "kelvin": 5600 },
+    { "name": "Hair light", "role": "back", "modifier": "",     "side": "right", "azimuth_deg": 150, "height_cm": 90, "distance_cm": 150, "power_pct": 50, "kelvin": 5600 }
+  ],
+  "reference": null,
+  "prefs": { "countdown": 5, "camera_offset": 3 }
+}

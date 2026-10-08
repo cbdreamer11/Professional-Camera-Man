@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="author" content="Caleb Elizondo">
+<title>Setup · Professional Camera Man</title>
+<link rel="icon" href="assets/icon-192.png">
+<link rel="stylesheet" href="style.css">
+<style>
+  body{font-size:16px;padding-bottom:3rem}
+  main{max-width:60rem;margin:0 auto;padding:1rem}
+  .head{display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem} .head img{width:3rem;height:3rem;border-radius:.7rem} .head h1{flex:1;font-size:1.4rem;color:var(--accent2);margin:0}
+  .head select{width:auto}
+  #steps{display:flex;gap:.3rem;margin:.6rem 0 1rem} #steps div{flex:1;height:.35rem;border-radius:1rem;background:var(--line)} #steps div.done{background:var(--accent)}
+  .step{display:none} .step.on{display:block}
+  h2{color:var(--accent2);font-size:1.25rem} .lead{color:var(--dim);margin:.2rem 0 1rem}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(14rem,1fr));gap:.7rem}
+  .opt{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:.9rem;padding:.8rem;text-align:left;display:block;min-height:5rem}
+  .opt b{display:block;margin-bottom:.2rem} .opt small{color:var(--dim)} .opt.sel{border-color:var(--accent);background:#101a30}
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.7rem}
+  .nav{display:flex;justify-content:space-between;gap:.6rem;margin-top:1.4rem} .nav button{min-height:2.8rem;padding:0 1.4rem}
+  .light{margin:.6rem 0;padding:.8rem} .light .top{display:flex;gap:.6rem;align-items:center} .light .top input{flex:1}
+  .light .g{display:grid;grid-template-columns:repeat(auto-fit,minmax(8.5rem,1fr));gap:.5rem;margin-top:.3rem}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:1rem} @media(max-width:760px){.two{grid-template-columns:1fr}}
+  #svg{width:100%;background:#0e0e10;border:1px solid var(--line);border-radius:.9rem}
+  #refWrap{position:relative;display:inline-block;max-width:100%} #refWrap img{max-width:100%;max-height:22rem;display:block;border-radius:.6rem}
+  #refWrap .bx{position:absolute;border:2px solid var(--accent2);border-radius:.3rem} #refWrap .bx.l{border-color:#4aa3ff} #refWrap .bx.r{border-color:#ff7a59}
+  .chips{display:flex;flex-wrap:wrap;gap:.4rem;margin:.6rem 0} .chip{background:var(--panel2);border:1px solid var(--line);border-radius:1rem;padding:.2rem .7rem;font-size:.85rem}
+  .res li{margin:.4rem 0} .res li.w{color:var(--accent2)}
+  .claude{margin-top:1.5rem;border:1px dashed var(--line);border-radius:.9rem;padding:.8rem 1rem;color:var(--dim);font-size:.9rem} code{background:#1c1c1f;padding:.1rem .4rem;border-radius:.3rem}
+</style>
+</head>
+<body>
+<main>
+  <div class="head"><img src="assets/icon-192.png" alt=""><h1 id="hTitle">Setup</h1>
+    <select id="langSel" aria-label="language"><option value="en">English</option><option value="es">Español</option></select></div>
+  <div id="steps"></div>
+
+  <!-- 1: look -->
+  <section class="step" data-i="0">
+    <h2 data-w="s1"></h2><p class="lead" data-w="s1d"></p>
+    <div class="cards" id="styleCards"></div>
+    <div class="grid2" style="margin-top:1rem">
+      <div><label data-w="fps"></label><select id="fps"><option>23.976</option><option>24</option><option>25</option><option selected>29.97</option><option>30</option><option>50</option><option>59.94</option><option>60</option></select></div>
+      <div><label data-w="mains"></label><select id="mains"><option value="60">60 Hz (Americas, Japan…)</option><option value="50">50 Hz (Europe, most of the world)</option></select></div>
+      <div><label data-w="use"></label><select id="use"><option value="youtube">YouTube / social</option><option value="podcast">Podcast / interviews</option><option value="corporate">Corporate / courses</option><option value="stream">Live streaming</option><option value="other">Other</option></select></div>
+    </div>
+  </section>
+
+  <!-- 2: reference -->
+  <section class="step" data-i="1">
+    <h2 data-w="s2"></h2><p class="lead" data-w="s2d"></p>
+    <input type="file" id="refFile" accept="image/*">
+    <div style="margin-top:.8rem" id="refOut" class="hide">
+      <div id="refWrap"><img id="refImg" alt=""><div class="bx" id="bxF"></div><div class="bx l" id="bxL"></div><div class="bx r" id="bxR"></div></div>
+      <div class="chips" id="refChips"></div>
+      <button id="refClear" data-w="clear"></button>
+    </div>
+    <p class="dim" style="font-size:.85rem;margin-top:1rem" data-w="s2n"></p>
+  </section>
+
+  <!-- 3: camera -->
+  <section class="step" data-i="2">
+    <h2 data-w="s3"></h2><p class="lead" data-w="s3d"></p>
+    <div class="cards" id="camCards"></div>
+    <div id="camFields" style="margin-top:1rem"></div>
+    <div class="fila" style="display:flex;gap:.6rem;align-items:center;margin-top:.8rem"><button id="testBtn"><span data-w="test"></span></button><span id="testOut"></span></div>
+    <div class="grid2" style="margin-top:1rem">
+      <div><label data-w="lens"></label><input id="lens" placeholder="RF 24-70 f/2.8 · 35 mm …"></div>
+      <div><label data-w="camd"></label><input id="camd" type="number" min="30" step="10"></div>
+      <div><label data-w="camh"></label><input id="camh" type="number" step="5"></div>
+    </div>
+  </section>
+
+  <!-- 4: lights -->
+  <section class="step" data-i="3">
+    <h2 data-w="s4"></h2><p class="lead" data-w="s4d"></p>
+    <div class="two"><div>
+      <div class="grid2"><div><label data-w="bgd"></label><input id="bgd" type="number" min="0" step="10"></div></div>
+      <div id="lights"></div>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem">
+        <button data-add="key"><span data-w="addkey"></span></button><button data-add="fill"><span data-w="addfill"></span></button>
+        <button data-add="back"><span data-w="addback"></span></button><button data-add="background"><span data-w="addbg"></span></button>
+      </div></div>
+      <div><svg id="svg" viewBox="0 0 420 420"></svg><div class="dim" style="font-size:.8rem;margin-top:.3rem" data-w="svgn"></div></div></div>
+  </section>
+
+  <!-- 5: review -->
+  <section class="step" data-i="4">
+    <h2 data-w="s5"></h2><p class="lead" data-w="s5d"></p>
+    <div class="card"><div class="grid2"><div><label data-w="cd"></label><input id="cd" type="number" min="0" max="30"></div><div><label data-w="co"></label><input id="co" type="number" min="0" max="30"></div></div></div>
+    <ul class="res" id="res"></ul>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem"><button id="dl"><span data-w="dl"></span></button></div>
+  </section>
+
+  <div class="nav"><button id="back" data-i18n="wiz_back"></button><button id="next" class="primary" data-i18n="wiz_next"></button></div>
+  <div class="claude" data-w="claude"></div>
+</main>
+
+<script src="common.js"></script>
+<script src="look.js"></script>
+<script>
+const $ = s => document.querySelector(s), t = PCM.t;
+const W = {
+ en: {title:'Setup', s1:'1 · The look you want', s1d:'Pick the style closest to what you imagine. You can fine-tune it later.', fps:'Frames per second you record at', mains:'Mains frequency where you live (avoids light flicker)', use:'What is it for?',
+  s2:'2 · Reference photo (optional)', s2d:'A photo or video frame of the look you want — one person, roughly centred. The app measures brightness, light direction, contrast and warmth, and uses it as the target.', s2n:'Everything is measured inside your browser; the photo is not uploaded anywhere and only the numbers are saved.', clear:'Remove',
+  s3:'3 · Your camera and its API', s3d:'Pick the closest option. If your camera has no usable network API, choose “video input” — you still get the monitor, grid, look-matching and teleprompter.', test:'Test connection', lens:'Lens (optional)', camd:'Distance camera → you (cm)', camh:'Lens height vs your eyes (cm, negative = lower)',
+  s4:'4 · Your lights and distances', s4d:'Add every light you have. Angle: 0° = next to the camera, 90° = beside you, 180° = behind you. Side is as seen from the camera.', bgd:'Distance you → background (cm)', addkey:'+ Key light', addfill:'+ Fill', addback:'+ Back light', addbg:'+ Background light', svgn:'Top view. Camera at the bottom, you in the middle, wall at the top.',
+  s5:'5 · Your advice', s5d:'This is what to change on your set, calculated from your distances.', cd:'Count-in before recording (s)', co:'Camera starts at second', dl:'Download profile (JSON)',
+  claude:'Prefer to answer in a chat? Open this folder in Claude Code and run  /setup-studio  — it asks the same questions and writes the same profile.',
+  name:'Name', role:'Role', side:'Side (from camera)', az:'Angle °', h:'Height vs eyes (cm)', d:'Distance to face (cm)', pw:'Power %', k:'Colour temp (K)', mod:'Modifier', del:'Remove', elev:'elevation',
+  roles:{key:'Key', fill:'Fill', back:'Back', background:'Background', practical:'Practical', other:'Other'}, sides:{left:'Left', right:'Right'},
+  testing:'Testing…', ok:'Connected', fail:'Not reachable (check address, power, network)', selcam:'Selected', host_missing:'Fill in the camera address first.',
+  styles:{corporate_clean:['Corporate & clean','Soft, even, trustworthy. Gentle shadows.'],podcast_warm:['Podcast, warm','Warm tones, a little more contrast, cosy background.'],cinematic_moody:['Cinematic, moody','Strong contrast, dark background, rim light.'],high_key_bright:['Bright & airy','Very soft, bright, almost shadowless.'],tech_cool:['Tech, cool tones','Neutral skin, cool accent lights behind.'],custom:['Match my reference photo','Targets come from the photo of step 2.']},
+  cheek:'cheek ratio', side_l:'lit from the left', side_r:'lit from the right', side_e:'evenly lit', face:'face brightness', warm:'warmth R/B', bgl:'background brightness', ctr:'contrast'},
+ es: {title:'Configuración', s1:'1 · El look que quieres', s1d:'Elige el estilo más cercano a lo que imaginas. Luego se afina.', fps:'Cuadros por segundo con los que grabas', mains:'Frecuencia de la luz eléctrica donde vives (evita el parpadeo)', use:'¿Para qué es?',
+  s2:'2 · Foto de referencia (opcional)', s2d:'Una foto o cuadro de video del look que quieres — una persona, más o menos al centro. La app mide brillo, dirección de la luz, contraste y calidez, y lo usa como meta.', s2n:'Todo se mide dentro de tu navegador; la foto no se sube a ningún lado y solo se guardan los números.', clear:'Quitar',
+  s3:'3 · Tu cámara y su API', s3d:'Elige la opción más cercana. Si tu cámara no tiene una API de red usable, elige “entrada de video”: igual tienes monitor, cuadrícula, igualar el look y teleprompter.', test:'Probar conexión', lens:'Lente (opcional)', camd:'Distancia cámara → tú (cm)', camh:'Altura del lente vs tus ojos (cm, negativo = más abajo)',
+  s4:'4 · Tus luces y distancias', s4d:'Agrega todas las luces que tengas. Ángulo: 0° = junto a la cámara, 90° = a tu lado, 180° = detrás de ti. El lado es visto desde la cámara.', bgd:'Distancia tú → fondo (cm)', addkey:'+ Luz principal', addfill:'+ Relleno', addback:'+ Contra', addbg:'+ Luz de fondo', svgn:'Vista desde arriba. Cámara abajo, tú al centro, pared arriba.',
+  s5:'5 · Tus consejos', s5d:'Esto es lo que conviene cambiar en tu set, calculado con tus distancias.', cd:'Cuenta regresiva antes de grabar (s)', co:'La cámara arranca en el segundo', dl:'Descargar perfil (JSON)',
+  claude:'¿Prefieres contestar en un chat? Abre esta carpeta en Claude Code y corre  /setup-studio  — te hace las mismas preguntas y escribe el mismo perfil.',
+  name:'Nombre', role:'Función', side:'Lado (desde la cámara)', az:'Ángulo °', h:'Altura vs ojos (cm)', d:'Distancia a tu cara (cm)', pw:'Potencia %', k:'Temp. de color (K)', mod:'Difusor', del:'Quitar', elev:'elevación',
+  roles:{key:'Principal', fill:'Relleno', back:'Contra', background:'Fondo', practical:'Práctica', other:'Otra'}, sides:{left:'Izquierda', right:'Derecha'},
+  testing:'Probando…', ok:'Conectada', fail:'No responde (revisa dirección, encendido y red)', selcam:'Elegida', host_missing:'Primero escribe la dirección de la cámara.',
+  styles:{corporate_clean:['Corporativo y limpio','Suave, parejo, confiable. Sombras discretas.'],podcast_warm:['Podcast, cálido','Tonos cálidos, un poco más de contraste, fondo acogedor.'],cinematic_moody:['Cinematográfico, dramático','Mucho contraste, fondo oscuro, luz de contorno.'],high_key_bright:['Brillante y limpio','Muy suave, luminoso, casi sin sombras.'],tech_cool:['Tech, tonos fríos','Piel neutra, luces de acento frías al fondo.'],custom:['Igualar mi foto de referencia','Las metas salen de la foto del paso 2.']},
+  cheek:'relación de mejillas', side_l:'luz desde la izquierda', side_r:'luz desde la derecha', side_e:'luz pareja', face:'brillo de la cara', warm:'calidez R/B', bgl:'brillo del fondo', ctr:'contraste'},
+};
+const w = k => (W[PCM.lang] || W.en)[k];
+function applyW(){ document.querySelectorAll('[data-w]').forEach(e => { e.textContent = w(e.dataset.w); }); $('#hTitle').textContent = w('title'); }
+
+let P = {lang: PCM.lang, style: 'corporate_clean', fps: 29.97, mains_hz: 60, use: 'youtube', camera: {adapter: 'video_input', cfg: {}, lens: '', distance_cm: 200, height_vs_eyes_cm: 0},
+         subject: {background_distance_cm: 150}, lights: [], reference: null, prefs: {countdown: 5, camera_offset: 3}};
+let META = {adapters: []}, step = 0;
+const N = 5;
+
+/* ---- steps ---- */
+function go(i){
+  step = Math.max(0, Math.min(N - 1, i));
+  document.querySelectorAll('.step').forEach(s => s.classList.toggle('on', +s.dataset.i === step));
+  $('#steps').innerHTML = Array.from({length: N}, (_, k) => '<div class="' + (k <= step ? 'done' : '') + '"></div>').join('');
+  $('#back').style.visibility = step ? 'visible' : 'hidden';
+  $('#next').textContent = step === N - 1 ? t('wiz_finish') : t('wiz_next');
+  if (step === 3) drawSvg();
+  if (step === N - 1) review();
+  scrollTo(0, 0);
+}
+$('#back').onclick = () => go(step - 1);
+$('#next').onclick = async () => {
+  if (step < N - 1) return go(step + 1);
+  collect();
+  try { await PCM.api('POST', '/api/profile', P); try { localStorage.setItem('pcm_lang', P.lang); } catch(e){} location.href = '/'; }
+  catch(e){ PCM.toast(e.message); }
+};
+
+/* ---- 1 style ---- */
+function paintStyles(){
+  const box = $('#styleCards'); box.innerHTML = '';
+  for (const [k, v] of Object.entries(w('styles'))){
+    const b = document.createElement('button'); b.className = 'opt' + (P.style === k ? ' sel' : ''); b.innerHTML = '<b>' + v[0] + '</b><small>' + v[1] + '</small>';
+    b.onclick = () => { P.style = k; paintStyles(); }; box.appendChild(b);
+  }
+}
+
+/* ---- 2 reference ---- */
+$('#refFile').onchange = e => {
+  const f = e.target.files[0]; if (!f) return;
+  const img = $('#refImg'); img.onload = () => {
+    const m = Look.analyze(img); if (!m) return;
+    P.reference = Object.assign({filename: f.name}, m); showRef();
+  };
+  img.src = URL.createObjectURL(f);
+};
+function showRef(){
+  const r = P.reference; $('#refOut').classList.toggle('hide', !r); if (!r) return;
+  for (const [id, k] of [['bxF', 'face'], ['bxL', 'left'], ['bxR', 'right']]){
+    const b = Look.BOX[k], e = $('#' + id); e.style.cssText = 'left:' + b[0] * 100 + '%;top:' + b[1] * 100 + '%;width:' + (b[2] - b[0]) * 100 + '%;height:' + (b[3] - b[1]) * 100 + '%';
+  }
+  const side = {left: w('side_l'), right: w('side_r'), even: w('side_e')}[r.bright_side];
+  $('#refChips').innerHTML = [[w('face'), r.face_luma + '/255'], [w('cheek'), r.cheek_ratio + ':1'], [side, ''], [w('warm'), r.rb_ratio], [w('bgl'), r.bg_luma + '/255'], [w('ctr'), r.contrast + '×']]
+    .map(c => '<span class="chip">' + c[0] + (c[1] ? ': <b>' + c[1] + '</b>' : '') + '</span>').join('');
+  if (P.style !== 'custom' && !P._askedCustom){ P._askedCustom = true; }
+}
+$('#refClear').onclick = () => { P.reference = null; $('#refFile').value = ''; showRef(); };
+
+/* ---- 3 camera ---- */
+function paintCams(){
+  const box = $('#camCards'); box.innerHTML = '';
+  for (const a of META.adapters){
+    const b = document.createElement('button'); b.className = 'opt' + (P.camera.adapter === a.id ? ' sel' : '');
+    b.innerHTML = '<b>' + a.name + '</b><span class="tag ' + (a.tested ? 'ok' : 'warn') + '">' + (a.tested ? '✓ ' + t('tested') : '⚠ untested') + '</span><br><small>' + a.status_note + '</small>';
+    b.onclick = () => { if (P.camera.adapter !== a.id){ P.camera.adapter = a.id; P.camera.cfg = {}; } paintCams(); }; box.appendChild(b);
+  }
+  const a = META.adapters.find(x => x.id === P.camera.adapter), f = $('#camFields'); f.innerHTML = '';
+  if (!a) return;
+  const g = document.createElement('div'); g.className = 'grid2';
+  for (const fld of a.fields){
+    const d = document.createElement('div'); d.innerHTML = '<label>' + fld.label + '</label><input data-k="' + fld.key + '" placeholder="' + (fld.default ?? '') + '"><div class="dim" style="font-size:.75rem">' + (fld.help || '') + '</div>';
+    d.querySelector('input').value = P.camera.cfg[fld.key] ?? ''; d.querySelector('input').oninput = e => { P.camera.cfg[fld.key] = e.target.value; };
+    g.appendChild(d);
+  }
+  f.appendChild(g);
+  if (a.docs_url) { const l = document.createElement('div'); l.className = 'dim'; l.style.cssText = 'font-size:.8rem;margin-top:.5rem'; l.innerHTML = /^https?:/.test(a.docs_url) ? '<a target="_blank" rel="noopener" href="' + a.docs_url + '">docs ↗</a>' : 'docs: ' + a.docs_url; f.appendChild(l); }
+  $('#testBtn').style.display = a.id === 'video_input' ? 'none' : ''; $('#testOut').textContent = '';
+}
+$('#testBtn').onclick = async () => {
+  const a = META.adapters.find(x => x.id === P.camera.adapter), host = P.camera.cfg.host ?? (a.fields.find(f => f.key === 'host') || {}).default;
+  if (a.fields.some(f => f.key === 'host') && !host) return ($('#testOut').textContent = w('host_missing'));
+  $('#testOut').textContent = w('testing'); $('#testOut').style.color = '';
+  try { const r = await PCM.api('POST', '/api/connect-test', {adapter: a.id, cfg: P.camera.cfg});
+    $('#testOut').textContent = r.connected ? '✓ ' + w('ok') + (r.model ? ' — ' + r.model : '') : '✗ ' + w('fail'); $('#testOut').style.color = r.connected ? 'var(--ok)' : 'var(--rec)'; }
+  catch(e){ $('#testOut').textContent = '✗ ' + e.message; $('#testOut').style.color = 'var(--rec)'; }
+};
+
+/* ---- 4 lights ---- */
+const PRESETS = {key: {name: 'Key', role: 'key', modifier: 'softbox', side: 'left', azimuth_deg: 40, height_cm: 25, distance_cm: 100, power_pct: 80, kelvin: 5600},
+  fill: {name: 'Fill', role: 'fill', modifier: 'panel', side: 'right', azimuth_deg: 35, height_cm: 10, distance_cm: 150, power_pct: 40, kelvin: 5600},
+  back: {name: 'Back light', role: 'back', modifier: '', side: 'right', azimuth_deg: 150, height_cm: 90, distance_cm: 150, power_pct: 50, kelvin: 5600},
+  background: {name: 'Background', role: 'background', modifier: '', side: 'left', azimuth_deg: 170, height_cm: 0, distance_cm: 150, power_pct: 60, kelvin: null}};
+document.querySelectorAll('[data-add]').forEach(b => b.onclick = () => { P.lights.push(Object.assign({}, PRESETS[b.dataset.add])); paintLights(); });
+function paintLights(){
+  const box = $('#lights'); box.innerHTML = '';
+  P.lights.forEach((l, i) => {
+    const d = document.createElement('div'); d.className = 'card light';
+    const num = (k, step = 1) => '<input type="number" step="' + step + '" data-k="' + k + '" value="' + (l[k] ?? '') + '">';
+    const ro = Object.entries(w('roles')).map(([k, v]) => '<option value="' + k + '"' + (l.role === k ? ' selected' : '') + '>' + v + '</option>').join('');
+    const si = Object.entries(w('sides')).map(([k, v]) => '<option value="' + k + '"' + (l.side === k ? ' selected' : '') + '>' + v + '</option>').join('');
+    const el = Math.round(Math.atan2(l.height_cm, Math.max(1, l.distance_cm)) * 180 / Math.PI);
+    d.innerHTML = '<div class="top"><input data-k="name" value="' + (l.name || '').replace(/"/g, '&quot;') + '" placeholder="' + w('name') + '"><button data-del>' + w('del') + '</button></div><div class="g">' +
+      '<div><label>' + w('role') + '</label><select data-k="role">' + ro + '</select></div><div><label>' + w('side') + '</label><select data-k="side">' + si + '</select></div>' +
+      '<div><label>' + w('az') + '</label>' + num('azimuth_deg') + '</div><div><label>' + w('h') + '</label>' + num('height_cm', 5) + '<small class="dim">' + w('elev') + ' ' + el + '°</small></div>' +
+      '<div><label>' + w('d') + '</label>' + num('distance_cm', 5) + '</div><div><label>' + w('pw') + '</label>' + num('power_pct', 5) + '</div>' +
+      '<div><label>' + w('k') + '</label>' + num('kelvin', 100) + '</div><div><label>' + w('mod') + '</label><input data-k="modifier" value="' + (l.modifier || '') + '"></div></div>';
+    d.querySelectorAll('[data-k]').forEach(inp => inp.oninput = inp.onchange = () => {
+      const k = inp.dataset.k; l[k] = inp.type === 'number' ? (inp.value === '' ? null : +inp.value) : inp.value; drawSvg();
+      if (k === 'height_cm' || k === 'distance_cm') { const e = Math.round(Math.atan2(l.height_cm, Math.max(1, l.distance_cm)) * 180 / Math.PI); const s = d.querySelector('small'); if (s) s.textContent = w('elev') + ' ' + e + '°'; }
+    });
+    d.querySelector('[data-del]').onclick = () => { P.lights.splice(i, 1); paintLights(); };
+    box.appendChild(d);
+  });
+  drawSvg();
+}
+function drawSvg(){
+  const svg = $('#svg'), cam = +$('#camd').value || P.camera.distance_cm || 200, bg = +$('#bgd').value || P.subject.background_distance_cm || 150;
+  const maxD = Math.max(cam, bg, ...P.lights.map(l => l.distance_cm || 0), 100), k = 150 / maxD, cx = 210, cy = 215;
+  let s = '<defs><marker id="ar" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#8bb8ff"/></marker></defs>';
+  s += '<line x1="30" x2="390" y1="' + (cy - bg * k) + '" y2="' + (cy - bg * k) + '" stroke="#555" stroke-width="6"/><text x="36" y="' + (cy - bg * k - 8) + '" fill="#888" font-size="11">wall · ' + Math.round(bg) + ' cm</text>';
+  s += '<circle cx="' + cx + '" cy="' + cy + '" r="14" fill="#2a2a2f" stroke="#8bb8ff"/><text x="' + cx + '" y="' + (cy + 4) + '" fill="#8bb8ff" font-size="10" text-anchor="middle">YOU</text>';
+  const camY = Math.min(405, cy + cam * k);
+  s += '<rect x="' + (cx - 14) + '" y="' + (camY - 9) + '" width="28" height="18" rx="3" fill="#1c1c1f" stroke="#ececec"/><text x="' + cx + '" y="' + (camY + 4) + '" fill="#ececec" font-size="9" text-anchor="middle">CAM</text>';
+  s += '<line x1="' + cx + '" y1="' + (camY - 9) + '" x2="' + cx + '" y2="' + (cy + 15) + '" stroke="#444" stroke-dasharray="3 4"/><text x="' + (cx + 6) + '" y="' + ((camY + cy) / 2) + '" fill="#777" font-size="10">' + Math.round(cam) + ' cm</text>';
+  const colors = {key: '#8bb8ff', fill: '#7fd6a0', back: '#ff7a59', background: '#4aa3ff', practical: '#b58cff', other: '#aaa'};
+  for (const l of P.lights){
+    const th = (l.azimuth_deg || 0) * Math.PI / 180, dist = (l.distance_cm || 100) * k, sgn = l.side === 'right' ? 1 : -1;
+    const x = cx + sgn * Math.sin(th) * dist, y = cy + Math.cos(th) * dist, c = colors[l.role] || '#aaa';
+    s += '<line x1="' + x + '" y1="' + y + '" x2="' + (cx + (x - cx) * .12) + '" y2="' + (cy + (y - cy) * .12) + '" stroke="' + c + '" stroke-width="1.5" marker-end="url(#ar)" opacity=".8"/>';
+    s += '<circle cx="' + x + '" cy="' + y + '" r="9" fill="' + c + '"/><text x="' + x + '" y="' + (y - 13) + '" fill="' + c + '" font-size="10" text-anchor="middle">' + (l.name || '').slice(0, 16).replace(/</g, '') + '</text>';
+  }
+  svg.innerHTML = s;
+}
+$('#camd').oninput = () => { P.camera.distance_cm = +$('#camd').value; drawSvg(); }; $('#bgd').oninput = () => { P.subject.background_distance_cm = +$('#bgd').value; drawSvg(); };
+
+/* ---- 5 review ---- */
+function collect(){
+  P.lang = PCM.lang; P.fps = +$('#fps').value; P.mains_hz = +$('#mains').value; P.use = $('#use').value;
+  P.camera.lens = $('#lens').value; P.camera.distance_cm = +$('#camd').value || 200; P.camera.height_vs_eyes_cm = +$('#camh').value || 0;
+  P.subject.background_distance_cm = +$('#bgd').value || 0; P.prefs = {countdown: +$('#cd').value, camera_offset: +$('#co').value};
+  delete P._askedCustom;
+}
+async function review(){
+  collect();
+  try {
+    const r = await PCM.api('POST', '/api/recommend', P), ul = $('#res'); ul.innerHTML = '';
+    for (const x of r.warnings) { const li = document.createElement('li'); li.className = 'w'; li.textContent = '⚠ ' + x; ul.appendChild(li); }
+    for (const x of r.notes) { const li = document.createElement('li'); li.textContent = x; ul.appendChild(li); }
+    if (!r.warnings.length && !r.notes.length) ul.innerHTML = '<li>' + t('nothing_to_fix') + '</li>';
+  } catch(e){ $('#res').innerHTML = '<li class="w">' + e.message + '</li>'; }
+}
+$('#dl').onclick = () => { collect(); const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(P, null, 1)], {type: 'application/json'})); a.download = 'profile.json'; a.click(); };
+
+/* ---- language ---- */
+$('#langSel').value = PCM.lang;
+$('#langSel').onchange = e => { PCM.setLang(e.target.value); P.lang = PCM.lang; applyW(); paintStyles(); paintCams(); paintLights(); showRef(); go(step); };
+
+/* ---- start ---- */
+(async function(){
+  try { META = await PCM.api('GET', '/api/meta'); const existing = await PCM.api('GET', '/api/profile'); if (existing.style) { P = Object.assign(P, existing); } }
+  catch(e){ PCM.toast('Server not running: python3 pcm.py'); }
+  $('#fps').value = String(P.fps); if (![...$('#fps').options].some(o => o.value === String(P.fps))) $('#fps').insertAdjacentHTML('beforeend', '<option>' + P.fps + '</option>'), $('#fps').value = String(P.fps);
+  $('#mains').value = String(P.mains_hz); $('#use').value = P.use || 'youtube'; $('#lens').value = P.camera.lens || ''; $('#camd').value = P.camera.distance_cm; $('#camh').value = P.camera.height_vs_eyes_cm;
+  $('#bgd').value = P.subject.background_distance_cm; $('#cd').value = P.prefs.countdown; $('#co').value = P.prefs.camera_offset;
+  if (!P.lights.length) { P.lights.push(Object.assign({}, PRESETS.key), Object.assign({}, PRESETS.fill)); }
+  applyW(); PCM.translate(); paintStyles(); paintCams(); paintLights(); showRef(); go(0);
+})();
+</script>
+</body>
+</html>

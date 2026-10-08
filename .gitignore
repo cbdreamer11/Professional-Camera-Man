@@ -1,0 +1,9 @@
+# Your studio: profile, scenes, drop-in adapters. Never commit these.
+data/
+__pycache__/
+*.pyc
+*.tmp
+.DS_Store
+.env
+*.env
+.claude/settings.local.json
